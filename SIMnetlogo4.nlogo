@@ -216,27 +216,36 @@ to go
   ask patches with [(ncaçadors + nnormals + nexploradors) > 0] [
     let cordenadax [pxcor] of self
     let cordenaday [pycor] of self
-    ifelse (ncaçadors + nnormals + nexploradors) >= 3 [
+    let ne nexploradors
+    let nc ncaçadors
+    let nn nnormals
+    (ifelse
+      (ncaçadors + nnormals + nexploradors) >= 3 [
+        ask humans with [xhome = cordenadax and yhome = cordenaday] [
+          if ne = 0 [
+            ifelse nn > 2 and rol > 10 and rol <= 50  [set rol 5 set color black show "he creat un negre1" set ne ne + 1 set nn nn - 1]
+            [if nc > 0 and rol > 50 [set rol 5 set color black show "he creat un negre2" set ne ne + 1 set nc nc - 1]]
+          ]
+          if nc = 0 [
+            if nn > 2  and rol > 10 and rol <= 50  [set rol 60 set color brown show "he creat un marró" set nc nc + 1 set nn nn - 1]
+          ]
+          if nn < 2 [
+            ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink set nn nn + 1 show "he creat un rosa1"set ne ne - 1]
+            [if nc >= 2 and rol > 50  [set rol 30 set color pink show "he creat un rosa2" set nn nn + 1 set nc nc - 1 ]]
+          ]
+          if nn < 2 [
+            ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink show "he creat un rosa3" set nn nn + 1 set ne ne - 1]
+            [if nc >= 2 and rol > 50  [set rol 30 set color pink show "he creat un rosa4"set nn nn + 1 set nc nc - 1 ]]
+          ]
+        ]
 
-      ask humans with [xhome = cordenadax and yhome = cordenaday] [
-
-      if nexploradors = 0 [
-        ifelse nnormals > 2 and rol > 10 and rol <= 50  [set rol 5 set color black show "he creat un negre1" set nexploradors nexploradors + 1 set nnormals nnormals - 1]
-          [if ncaçadors > 0 and rol > 50 [set rol 5 set color black show "he creat un negre2" set nexploradors nexploradors + 1 set ncaçadors ncaçadors - 1]]
-      ]
-      if ncaçadors = 0 [
-          if nnormals > 2  and rol > 10 and rol <= 50  [set rol 60 set color brown show "he creat un marró" set ncaçadors ncaçadors + 1 set nnormals nnormals - 1]
-      ]
-      if nnormals < 2 [
-        ifelse nexploradors >= 2 and rol <= 10  [set rol 30 set color pink set nnormals nnormals + 1 show "he creat un rosa1"set nexploradors nexploradors - 1]
-        [if ncaçadors >= 2 and rol > 50  [set rol 30 set color pink show "he creat un rosa2" set nnormals nnormals + 1 set ncaçadors ncaçadors - 1 ]]
-      ]
-        if nnormals < 2 [
-        ifelse nexploradors >= 2 and rol <= 10  [set rol 30 set color pink show "he creat un rosa3" set nnormals nnormals + 1 set nexploradors nexploradors - 1]
-        [if ncaçadors >= 2 and rol > 50  [set rol 30 set color pink show "he creat un rosa4"set nnormals nnormals + 1 set ncaçadors ncaçadors - 1 ]]
-      ]
     ]
-    ] [ if nnormals < 2 [ask humans with [xhome = cordenadax and yhome = cordenaday and (rol <= 10 or rol > 50) ] [set rol 30 set color pink show "he creat un rosa5" set ncaçadors  0 set nexploradors  0 set nnormals nnormals + 1]] ]
+
+      ;else
+    [ if nn < 2 [ask humans with [xhome = cordenadax and yhome = cordenaday and (rol <= 10 or rol > 50) ] [set rol 30 set color pink show "he creat un rosa5" set ne  0 set nc  0 set nn nn + 1]] ])
+    set nexploradors ne
+    set ncaçadors nc
+    set nnormals nn
   ]
 
 
