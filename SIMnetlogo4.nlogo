@@ -1,6 +1,6 @@
 breed [ mammoths mammoth ]
 breed [ humans human ]
-humans-own [xhome yhome rol xmammoths ymammoths]
+humans-own [xhome yhome rol xmammoths ymammoths ready?]
 turtles-own [ age nreproductions reproduceticks]
 patches-own [ncaçadors nexploradors nnormals]
 
@@ -14,7 +14,6 @@ globals [
   human-max-reproduction
   reproducecooldown
   human-birth-rate
-
   min-human-age-to-reproduce
 ]
 
@@ -56,6 +55,7 @@ to SETUP
     set xmammoths max-pxcor + 1
     set ymammoths max-pycor + 1
     set rol 30 ; Inicialment tots son normals
+    set ready? false
     move-to one-of patches
 
   ]
@@ -73,6 +73,141 @@ to go
     if ticks mod 365 = 0 [
       set nreproductions 0
     ]
+    if reproduceticks > 0 [
+      set reproduceticks reproduceticks - 1
+    ]
+  ]
+
+
+  ask humans [
+
+    if not any? other humans-here and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1) [
+      if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
+      movehuman human-speed
+    ]
+    if any? other humans-here and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1)[
+      let h one-of other humans-here
+      (ifelse
+        hasHome [xhome] of h [yhome] of h [
+         set xhome [xhome] of h
+         set yhome [yhome] of h
+         set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 5 normal. Caçador 51 a 100
+          (ifelse
+            rol <= 10 [
+              set color black ask patch xhome yhome [set nexploradors nexploradors + 1]
+            ]
+            rol > 10 and rol <= 50 [
+              set color pink ask patch xhome yhome [set nnormals nnormals + 1]
+            ]
+            rol > 50 [
+              set color brown ask patch xhome yhome [set ncaçadors ncaçadors + 1]
+            ]
+          )
+       ]
+       [
+         set xhome pxcor
+         set yhome pycor
+         set pcolor red
+         set rol random 100 ; Si es de 0 a 10 explorador. De 11 a 50 normal. Caçador 51 a 100
+         ( ifelse
+            rol <= 10 [
+              set color black ask patch xhome yhome [set nexploradors nexploradors + 1]
+            ]
+            rol > 10 and rol <= 50 [
+              set color pink ask patch xhome yhome [set nnormals nnormals + 1]
+            ]
+            [
+              set color brown ask patch xhome yhome [set ncaçadors ncaçadors + 1]
+            ])
+       ])
+    ]
+
+    if any? other humans-here and hasHome xhome yhome [
+      let h one-of other humans-here
+      if hasHome [xhome] of h [yhome] of h and patch xhome yhome != patch [xhome] of h [yhome] of h [
+        let numHumansHome1 0
+        ask patch xhome yhome [set numHumansHome1 ncaçadors + nnormals + nexploradors]
+        let numHumansHome2 0
+        ask patch [xhome] of h [yhome] of h [set numHumansHome2 ncaçadors + nnormals + nexploradors]
+        if numHumansHome1 + numHumansHome2 < 20 [
+          if numHumansHome1 <= numHumansHome2 [
+            ask patch xhome yhome [ set pcolor green - 0.25 - random-float 0.25 ]
+            ask humans with [xhome = [xhome] of self and yhome = [yhome] of self] [set xhome [xhome] of h set yhome [yhome] of h]
+            set xhome [xhome] of h
+            set yhome [yhome] of h
+          ]
+        ]
+      ]
+    ]
+
+    ;Aquesta part només la fan els rositas
+    ( ifelse
+      rol > 10 and rol <= 50 [
+      (ifelse
+        reproduceticks = 0  and hasHome xhome yhome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce [
+        face patch xhome yhome
+        movehuman human-speed
+        ]
+        [move human-speed])
+
+      if patch-here = patch xhome yhome and any? other humans-here [
+        let humanhere one-of other humans-here
+        if [age] of humanhere > min-human-age-to-reproduce and [nreproductions] of humanhere < human-max-reproduction and [reproduceticks] of humanhere = 0 [
+          reproduceHumans min-human-age-to-reproduce human-birth-rate
+          move 0
+        ]
+      ]
+    ]
+
+
+
+    ;Aquesta part nomes la fan els exploradors.
+
+      rol <= 10 [
+      	move human-speed 	
+        if any? mammoths in-radius 5 and xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 [
+            set xmammoths pxcor
+            set ymammoths pycor
+            ask patch-here [set pcolor grey]
+         ]
+      	 if xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and hasHome xhome yhome [
+          	face patch xhome yhome
+        		movehuman human-speed
+         ]
+         if patch-here = patch xhome yhome and xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 [
+              let xmam xmammoths
+              let ymam ymammoths
+              ask humans with [rol > 50 and xhome = [xhome] of self and yhome = [yhome] of self] [ set xmammoths xmam  set ymammoths ymam ]
+         ]
+     ]
+
+
+
+      ;aixo ho fan els caçadors
+        rol > 50 [
+        move human-speed
+        (ifelse
+          xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = false [
+          face patch xhome yhome
+          movehuman human-speed
+            if patch-here = patch xhome yhome and count (humans-here with [rol > 50 and xhome = [xhome] of self and yhome = [yhome] of self ] ) >= 2  [
+              set ready? true
+            ]
+          ]
+           xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = true [
+        		face patch xmammoths ymammoths
+         		movehuman human-speed
+          ] )
+        ]
+    )
+
+    die-naturally-human
+    set age age + 1
+
+     if ticks mod 365 = 0 [
+      set nreproductions 0
+    ]
+
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
@@ -105,124 +240,6 @@ to go
   ]
 
 
-  ask humans [
-
-    if not any? other humans-here and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1) [
-      if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
-      movehuman human-speed
-    ]
-    if any? other humans-here and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1)[
-      let h one-of other humans-here
-      ifelse hasHome [xhome] of h [yhome] of h
-        [set xhome [xhome] of h
-         set yhome [yhome] of h
-         set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 5 normal. Caçador 51 a 100
-          ifelse rol <= 10
-          [ set color black ask patch xhome yhome [set nexploradors nexploradors + 1] ]
-          [ ifelse rol > 10 and rol <= 50
-            [ set color pink ask patch xhome yhome [set nnormals nnormals + 1]]
-            [ set color brown ask patch xhome yhome [set ncaçadors ncaçadors + 1]]
-          ]
-       ]
-       [
-         set xhome pxcor
-         set yhome pycor
-         set pcolor red
-         set rol random 100 ; Si es de 0 a 10 explorador. De 11 a 50 normal. Caçador 51 a 100
-          ifelse rol <= 10
-          [ set color black ask patch xhome yhome [set nexploradors nexploradors + 1] ]
-          [ ifelse rol > 10 and rol <= 50
-            [ set color pink ask patch xhome yhome [set nnormals nnormals + 1]]
-            [ set color brown ask patch xhome yhome [set ncaçadors ncaçadors + 1]]
-          ]
-
-       ]
-    ]
-    
-    if any? other humans-here and hasHome xhome yhome [
-      let h one-of other humans-here
-      if hasHome [xhome] of h [yhome] of h and patch xhome yhome != patch [xhome] of h [yhome] of h [
-        let numHumansHome1 0
-        ask patch xhome yhome [set numHumansHome1 ncaçadors + nnormals + nexploradors]
-        let numHumansHome2 0
-        ask patch [xhome] of h [yhome] of h [set numHumansHome2 ncaçadors + nnormals + nexploradors]
-        if numHumansHome1 + numHumansHome2 < 20 [
-          if numHumansHome1 <= numHumansHome2 [
-
-            ask patch xhome yhome [ set pcolor green - 0.25 - random-float 0.25 ]
-            ask humans with [xhome = [xhome] of self and yhome = [yhome] of self] [set xhome [xhome] of h set yhome [yhome] of h]
-            set xhome [xhome] of h
-            set yhome [yhome] of h
-          ]
-        ]
-      ]
-    ]
-        
-    ;Aquesta part només la fan els rositas
-    ifelse rol > 10 and rol <= 50 [
-      ifelse reproduceticks = 0  and hasHome xhome yhome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce [
-        face patch xhome yhome
-        movehuman human-speed
-      ]
-      [move human-speed]
-
-      if patch-here = patch xhome yhome and any? other humans-here [
-        let humanhere one-of other humans-here
-        if [age] of humanhere > min-human-age-to-reproduce and [nreproductions] of humanhere < human-max-reproduction and [reproduceticks] of humanhere = 0 [
-          reproduceHumans min-human-age-to-reproduce human-birth-rate
-          move 0
-        ]
-      ]
-    ]
-    
- 
-    
-    ;Aquesta part nomes la fan els exploradors.
-    
-    [ ifelse rol <= 10 [ 
-      	move human-speed 	
-        ifelse any? mammoths in-radius 5 and xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1[
-            set xmammoths pxcor
-            set ymammoths pycor
-            ask patch-here [set pcolor grey]
-        ] 
-      	 [ifelse xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and hasHome xhome yhome[
-          	face patch xhome yhome
-        		movehuman human-speed
-          ] 
-          [
-            if patch-here = patch xhome yhome and xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 [
-              ask humans with [rol > 50 and xhome = [xhome] of self and yhome = [yhome] of self] [set xmammoths  [xmammoths] of self  set ymammoths  [ymammoths] of self]
-            ]
-          ]
-        ]
-      ]
-      ;aixo ho fan els caçadors
-      [ if rol > 50 [
-        if xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1[
-          face patch xhome yhome 
-          movehuman human-speed
-          if patch-here = patch xhome yhome [
-            show "se donde hay mammoths"
-        		face patch xmammoths ymammoths 
-         		movehuman human-speed
-          ]
-        ]
-       ]
-      ]
-    ]
-      
-    die-naturally-human
-    set age age + 1
-
-     if ticks mod 365 = 0 [
-      set nreproductions 0
-    ]
-
-    if reproduceticks > 0 [
-      set reproduceticks reproduceticks - 1
-    ]
-  ]
   tick
 end
 
@@ -298,10 +315,10 @@ to die-naturally-human
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-230
-58
-673
-501
+232
+68
+683
+520
 -1
 -1
 7.2623
@@ -322,7 +339,7 @@ GRAPHICS-WINDOW
 1
 1
 days
-30
+30.0
 
 BUTTON
 25
@@ -374,66 +391,66 @@ patches
 HORIZONTAL
 
 PLOT
-12
-224
-212
-374
+13
+242
+213
+392
 plot 1
 NIL
 NIL
-0
-10
-0
-10
+0.0
+10.0
+0.0
+10.0
 true
 false
 "" ""
 PENS
-"default" 1 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot count turtles"
 
 SLIDER
-15
-113
-198
-146
+12
+115
+195
+148
 human-speed
 human-speed
 0
 1
-0.3
+0.2
 0.1
 1
 NIL
 HORIZONTAL
 
 PLOT
-11
-388
-211
-538
+13
+398
+213
+548
 plot 2
 NIL
 NIL
-0
-10
-0
-10
+0.0
+10.0
+0.0
+10.0
 true
 false
 "" ""
 PENS
-"default" 1 0 -16777216 true "" "plot count humans"
+"default" 1.0 0 -16777216 true "" "plot count humans"
 
 SLIDER
-90
-608
-262
-641
+13
+199
+185
+232
 nHumansIni
-nhumansini
+nHumansIni
 2
 50
-3
+3.0
 1
 1
 NIL
@@ -447,15 +464,15 @@ PLOT
 num cazadores
 NIL
 NIL
-0
-10
-0
-10
+0.0
+10.0
+0.0
+10.0
 true
 false
 "" ""
 PENS
-"default" 1 0 -16777216 true "" "plot count humans with [rol >= 51]"
+"default" 1.0 0 -16777216 true "" "plot count humans with [rol >= 51]"
 
 PLOT
 1047
@@ -465,15 +482,15 @@ PLOT
 num normals
 NIL
 NIL
-0
-10
-0
-10
+0.0
+10.0
+0.0
+10.0
 true
 false
 "" ""
 PENS
-"default" 1 0 -16777216 true "" "plot count humans with [rol <= 50 and rol > 20]"
+"default" 1.0 0 -16777216 true "" "plot count humans with [rol <= 50 and rol > 20]"
 
 PLOT
 929
@@ -483,15 +500,16 @@ PLOT
 num exploradors
 NIL
 NIL
-0
-10
-0
-10
+0.0
+10.0
+0.0
+10.0
 true
 false
 "" ""
 PENS
-"default" 1 0 -16777216 true "" "plot count humans with [rol <= 20]"
+"default" 1.0 0 -16777216 true "" "plot count humans with [rol <= 20]"
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -846,22 +864,22 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.2.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 default
-0
--0.2 0 0 1
-0 1 1 0
-0.2 0 0 1
+0.0
+-0.2 0 0.0 1.0
+0.0 1 1.0 0.0
+0.2 0 0.0 1.0
 link direction
 true
 0
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-
+0
 @#$#@#$#@
