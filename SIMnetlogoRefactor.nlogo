@@ -87,6 +87,7 @@ to go
     ]
     if any? other humans in-radius 2 and not humanHasHome [
       let h one-of  other humans in-radius 2
+      ;si l'altre huma te casa i jo no, agafo la seva, altrament la creo
       (ifelse
        hasHome [xhome] of h [yhome] of h [takeHumanHome h]
        [createHome]
