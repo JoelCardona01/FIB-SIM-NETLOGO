@@ -214,25 +214,27 @@ end
 to forceHumanRoles
     ;A tots els patches que son casa
     ask patches with [(ncaçadors + nnormals + nexploradors) > 0] [
+    ;Inicialitzem variables per tal de fer mes comode el codi
     let cordenadax [pxcor] of self
     let cordenaday [pycor] of self
     let ne nexploradors
     let nc ncaçadors
     let nn nnormals
     (ifelse
+      ;Si la casa te mes de 3 habitants, ajustem els rols per els habitants de la casa
       (ncaçadors + nnormals + nexploradors) >= 3 [
         ask humans with [xhome = cordenadax and yhome = cordenaday] [
+          ;Si no la casa no te exploradors fem que es canvii a explorador
           if ne = 0 [
             ifelse nn > 2 or nc > 2 and rol > 10 and rol <= 40  [set rol 5 set color black set ne ne + 1 set nn nn - 1]
             [if nc > 0 and rol > 40 [set rol 5 set color black  set ne ne + 1 set nc nc - 1]]
           ]
+          ;Si tenim menys de dos caçadors i ja tenim normals i exploradors, fem canvi a caçador
+          ;NO HAURIEM DE POSAR ne>1? HO DIC PQ NORMALMENT AMB UN CAÇADOR TENIM
           if nc < 2 [
             if nn > 2 or ne > 2 and rol > 10 and rol <= 40  [set rol 60 set color yellow set nc nc + 1 set nn nn - 1]
           ]
-          if nn < 2 [
-            ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink set nn nn + 1 set ne ne - 1]
-            [if nc >= 2 and rol > 40  [set rol 30 set color pink set nn nn + 1 set nc nc - 1 ]]
-          ]
+          ;Si tenim menys de dos normals i tenim 2 exploradors o mes o tenim 2 caçadors o mes, fem canvi a normal del que tingui mes de 2
           if nn < 2 [
             ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink set nn nn + 1 set ne ne - 1]
             [if nc >= 2 and rol > 40  [set rol 30 set color pink set nn nn + 1 set nc nc - 1 ]]
@@ -241,14 +243,14 @@ to forceHumanRoles
 
     ]
 
-      ;else
+    ;Altrament, la casa ha de tenir 2 normals per tal de reproduir-se i/o agrupar-se i aixi fer creixer la casa
     [ if nn < 2 [ask humans with [xhome = cordenadax and yhome = cordenaday and (rol <= 10 or rol > 40) ] [set rol 30 set color pink  set ne  0 set nc  0 set nn nn + 1]] ])
+    ;Actualitzem els atributs del patch
     set nexploradors ne
     set ncaçadors nc
     set nnormals nn
   ]
 end
-
 
 to setRol
   set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 40 normal. Caçador 41 a 100
