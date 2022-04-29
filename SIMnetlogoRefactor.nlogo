@@ -136,7 +136,7 @@ to go
           reportMammothsLocation
          ]
          ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
-         if patch-here = patch xhome yhome and count (humans-here with [rol > 40  and xhome = [xhome] of self and yhome = [yhome] of self ] ) >= 1  [
+         if patch-here = patch xhome yhome and enoughHuntersHere  [
               set ready? true
          ]
         ;Si he trobat mamuts i estic llest, anem cap al mamut
@@ -150,32 +150,37 @@ to go
       ;aixo ho fan els caçadors
         rol > 40 [
         (ifelse
-          xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = false [
-
-          face patch xhome yhome
-          movehuman human-speed
-            if patch-here = patch xhome yhome and count (humans-here with [rol > 40 and xhome = [xhome] of self and yhome = [yhome] of self ] ) >= 1  [
+         ;Si se on hi han mamuts pero no estic llest, vaig cap a casa
+         mammothsFound and ready? = false [
+          humanMoveHome
+            ;Si estic a casa i som suficients caçadors, estem llestos per caçar al mamut
+            if patch-here = patch xhome yhome and enoughHuntersHere  [
               set ready? true
-
             ]
           ]
-           xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = true [
-
+          ;Si se on hi han mamuts i estic llest
+           mammothsFound and ready? = true [
+              ;Si estic on m'han dit que hi han mamuts
             	(ifelse patch-here = patch xmammoths ymammoths [
-
+              ;trec la zona marcada
               ask patch-here [set pcolor green - 0.25 - random-float 0.25]
-              (ifelse any? mammoths-here [fight]
+              ;lluito contra el mamut si el tinc al costat i m'en oblido de aquesta posicio que m'han dit que hi han mamuts perque si sobrevisc, el mamut haura estat mort
+              (ifelse any? mammoths-here [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false fight]
+              ;vaig a per el mamut mes proper si no hi ha cap aqui
               any? mammoths in-radius 5 [
                  face min-one-of mammoths [distance myself]
                  movehuman human-speed
               ]
+                ;si no hi veig cap mamut, desisteixo de caçar al mamut
                 [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false])
              ]
+              ;Si la zona on m'han dit que hi han mamuts esta marcada i estic llest, anem a aquesta zona
               [pcolor] of patch xmammoths ymammoths = grey and ready? = true[
-                face patch xmammoths ymammoths
-                movehuman human-speed]
-
+                humanMoveMammoth
+              ]
+              ;READY? = TRUE JA ES COMPROVA ADALT I ABANS QUE D'ENTRAR PER AQUI, S'ENTRARIA PER EL ANY? MAMMOTS-HERE D'ADALT NO?
               any? mammoths-here and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false  fight ]
+              ;AQUI EL MATEIX, NO ES EL MATEIX AQUESTA LINIA QUE LA D'ADALT QUE TAMBE TE EL RADIUS 5? ENCARA QUE AQUESTA LINIA ES MES RESTRICTIVA PQ TE LO DEL GRIS
               any? mammoths in-radius 5 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
                  face min-one-of mammoths [distance myself]
                  movehuman human-speed
@@ -183,6 +188,7 @@ to go
               [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false ]
              )
           ]
+          ;DIRIA QUE AQUESTA LINIA NO ES NECESARIA PERO TAMPOC FA MAL, PER SI DE CAS, JA QUE ES EL QUE HEM POSAT ADALT
             xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 and ready? = false [ move human-speed]
            )
         ]
@@ -200,7 +206,14 @@ to go
     ]
   ]
   ask patches with [pcolor = red] [show (ncaçadors + nnormals + nexploradors)]
-  ask patches with [(ncaçadors + nnormals + nexploradors) > 0] [
+  forceHumanRoles
+
+  tick
+end
+
+to forceHumanRoles
+    ;A tots els patches que son casa
+    ask patches with [(ncaçadors + nnormals + nexploradors) > 0] [
     let cordenadax [pxcor] of self
     let cordenaday [pycor] of self
     let ne nexploradors
@@ -234,9 +247,6 @@ to go
     set ncaçadors nc
     set nnormals nn
   ]
-
-
-  tick
 end
 
 
@@ -324,6 +334,10 @@ end
 
 to-report mammothsFound
   report (xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1)
+end
+
+to-report enoughHuntersHere
+  report (count (humans-here with [rol > 40  and xhome = [xhome] of self and yhome = [yhome] of self ] ) >= 1)
 end
 
 to-report humanCanReproduce
