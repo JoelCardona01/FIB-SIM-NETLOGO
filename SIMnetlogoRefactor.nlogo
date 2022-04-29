@@ -82,25 +82,16 @@ to go
 
   ask humans [
 
-    ;
     if not any? other humans-here and not humanHasHome [
-      if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
-      movehuman human-speed
+      moveNearestHuman
     ]
-    if any? other humans in-radius 2 and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1)[
+    if any? other humans in-radius 2 and not humanHasHome [
       let h one-of  other humans in-radius 2
       (ifelse
-        hasHome [xhome] of h [yhome] of h [
-         set xhome [xhome] of h
-         set yhome [yhome] of h
-         setRol
-       ]
-       [
-         set xhome pxcor
-         set yhome pycor
-         set pcolor red
-         setRol
-       ])
+       hasHome [xhome] of h [yhome] of h [takeHumanHome h]
+       [createHome]
+      )
+      setRol
     ]
 
     if any? other humans in-radius 2 and humanHasHome [
@@ -283,9 +274,24 @@ to-report hasHome [x y]
   report (x != (max-pxcor + 1) and y != (max-pycor + 1))
 end
 
+to takeHumanHome [h]
+  set xhome [xhome] of h
+  set yhome [yhome] of h
+end
+
+to createHome
+  set xhome pxcor
+  set yhome pycor
+  set pcolor red
+end
 
 to movehuman [dist]
   forward dist
+end
+
+to moveNearestHuman
+  if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
+  movehuman human-speed
 end
 
 to move [dist];
