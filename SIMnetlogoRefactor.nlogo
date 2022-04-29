@@ -95,21 +95,12 @@ to go
       setRol
     ]
 
+    ;si trobo un altre huma a prop i tinc casa
     if any? other humans in-radius 2 and humanHasHome [
       let h one-of other humans in-radius 2
-      if hasHome [xhome] of h [yhome] of h and patch xhome yhome != patch [xhome] of h [yhome] of h [
-        let numHumansHome1 0
-        ask patch xhome yhome [set numHumansHome1 ncaçadors + nnormals + nexploradors]
-        let numHumansHome2 0
-        ask patch [xhome] of h [yhome] of h [set numHumansHome2 ncaçadors + nnormals + nexploradors]
-        if numHumansHome1 + numHumansHome2 < 20 [
-          if numHumansHome1 <= numHumansHome2 [
-            ask patch xhome yhome [ set pcolor green - 0.25 - random-float 0.25 ]
-            ask humans with [xhome = [xhome] of self and yhome = [yhome] of self] [set xhome [xhome] of h set yhome [yhome] of h]
-            set xhome [xhome] of h
-            set yhome [yhome] of h
-          ]
-        ]
+      ;en cas que l'altre huma tambe tingui casa i no sigui la meva i es compleixin les condicions per ajuntar cases, les ajuntem
+      if hasHome [xhome] of h [yhome] of h and patch xhome yhome != patch [xhome] of h [yhome] of h and canJoinHomes h [
+        joinHomes h
       ]
     ]
 
@@ -284,6 +275,22 @@ to createHome
   set xhome pxcor
   set yhome pycor
   set pcolor red
+end
+
+to-report canJoinHomes [h]
+  ;Si la suma d'habitants de les dues cases es major a 20 podem ajuntar cases
+  let numHumansHome1 0
+  ask patch xhome yhome [set numHumansHome1 ncaçadors + nnormals + nexploradors]
+  let numHumansHome2 0
+  ask patch [xhome] of h [yhome] of h [set numHumansHome2 ncaçadors + nnormals + nexploradors]
+  report (numHumansHome1 + numHumansHome2 < 20 and numHumansHome1 <= numHumansHome2)
+end
+
+to joinHomes [h]
+  ask patch xhome yhome [ set pcolor green - 0.25 - random-float 0.25 ]
+  ask humans with [xhome = [xhome] of self and yhome = [yhome] of self] [set xhome [xhome] of h set yhome [yhome] of h]
+  set xhome [xhome] of h
+  set yhome [yhome] of h
 end
 
 to movehuman [dist]
