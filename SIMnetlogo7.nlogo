@@ -180,9 +180,7 @@ to go
               [pcolor] of patch xmammoths ymammoths = grey and ready? = true[
                 humanMoveMammoth
               ]
-              ;READY? = TRUE JA ES COMPROVA ADALT I ABANS QUE D'ENTRAR PER AQUI, S'ENTRARIA PER EL ANY? MAMMOTS-HERE D'ADALT NO?
               any? mammoths-here and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false  fight ]
-              ;AQUI EL MATEIX, NO ES EL MATEIX AQUESTA LINIA QUE LA D'ADALT QUE TAMBE TE EL RADIUS 5? ENCARA QUE AQUESTA LINIA ES MES RESTRICTIVA PQ TE LO DEL GRIS
               any? mammoths in-radius 5 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
                  face min-one-of mammoths [distance myself]
                  movehuman human-speed
@@ -190,7 +188,6 @@ to go
               [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false ]
              )
           ]
-          ;DIRIA QUE AQUESTA LINIA NO ES NECESARIA PERO TAMPOC FA MAL, PER SI DE CAS, JA QUE ES EL QUE HEM POSAT ADALT
             xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 and ready? = false [ move human-speed]
            )
         ]
@@ -206,6 +203,8 @@ to go
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
+
+    if any? mammoths in-radius 1 [fight]
   ]
 
   forceHumanRoles
@@ -228,21 +227,21 @@ to forceHumanRoles
         ask humans with [xhome = cordenadax and yhome = cordenaday] [
           ;Si no la casa no te exploradors fem que es canvii a explorador
           if ne = 0 [
-            ifelse nn > 2 or nc > 2 and rol > 10 and rol <= 40  [set rol 5 set color black set ne ne + 1 set nn nn - 1]
-            [if nc > 0 and rol > 40 [set rol 5 set color black  set ne ne + 1 set nc nc - 1]]
+            (ifelse nn > 2 or nc > 2 and rol > 10 and rol <= 40  [set rol 5 set color black set ne ne + 1 set nn nn - 1]
+            nc > 0 and rol > 40 [set rol 5 set color black  set ne ne + 1 set nc nc - 1]
+            )
           ]
           ;Si tenim menys de dos caçadors i ja tenim normals i exploradors, fem canvi a caçador
-          ;NO HAURIEM DE POSAR ne>1? HO DIC PQ NORMALMENT AMB UN CAÇADOR TENIM
           if nc < 2 [
             if nn > 2 or ne > 2 and rol > 10 and rol <= 40  [set rol 60 set color yellow set nc nc + 1 set nn nn - 1]
           ]
           ;Si tenim menys de dos normals i tenim 2 exploradors o mes o tenim 2 caçadors o mes, fem canvi a normal del que tingui mes de 2
           if nn < 2 [
-            ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink set nn nn + 1 set ne ne - 1]
-            [if nc >= 2 and rol > 40  [set rol 30 set color pink set nn nn + 1 set nc nc - 1 ]]
+            (ifelse ne >= 2 and rol <= 10  [set rol 30 set color pink set nn nn + 1 set ne ne - 1]
+            nc >= 2 and rol > 40  [set rol 30 set color pink set nn nn + 1 set nc nc - 1 ]
+            )
           ]
         ]
-
     ]
 
     ;Altrament, la casa ha de tenir 2 normals per tal de reproduir-se i/o agrupar-se i aixi fer creixer la casa
@@ -274,10 +273,6 @@ end
 to takeHumanHome [h]
   let xh [xhome] of h
   let yh [yhome] of h
-  (ifelse
-    rol <= 10 [ask patch xh yh [set nexploradors nexploradors + 1]]
-    rol > 10 and rol <= 40 [ask patch xh yh [set nnormals nnormals + 1]]
-    [ask patch xh yh [set ncaçadors ncaçadors + 1 ]])
   set xhome xh
   set yhome yh
 end
@@ -337,6 +332,9 @@ to move [dist];
      right random 50
      left random 50
   ]
+
+
+
 
   forward dist
 end
@@ -410,8 +408,8 @@ end
 
 
 to fight
-  if any? mammoths-here [
-    (ifelse random  100 > 40 [ask one-of mammoths in-radius 1 [die]]
+  if any? mammoths in-radius 1 [
+    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [ask one-of mammoths in-radius 1 [die]]
     [
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
@@ -542,7 +540,7 @@ human-speed
 human-speed
 0
 1
-1.0
+0.6
 0.1
 1
 NIL
@@ -575,7 +573,7 @@ nHumansIni
 nHumansIni
 2
 50
-14.0
+21.0
 1
 1
 NIL
@@ -661,7 +659,7 @@ nMamoothsIni
 nMamoothsIni
 0
 100
-9.0
+15.0
 1
 1
 NIL
