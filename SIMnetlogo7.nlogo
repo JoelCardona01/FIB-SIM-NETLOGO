@@ -272,8 +272,14 @@ to-report hasHome [x y]
 end
 
 to takeHumanHome [h]
-  set xhome [xhome] of h
-  set yhome [yhome] of h
+  let xh [xhome] of h
+  let yh [yhome] of h
+  (ifelse
+    rol <= 10 [ask patch xh yh [set nexploradors nexploradors + 1]]
+    rol > 10 and rol <= 40 [ask patch xh yh [set nnormals nnormals + 1]]
+    [ask patch xh yh [set ncaçadors ncaçadors + 1 ]])
+  set xhome xh
+  set yhome yh
 end
 
 to createHome
@@ -536,7 +542,7 @@ human-speed
 human-speed
 0
 1
-0.2
+1.0
 0.1
 1
 NIL

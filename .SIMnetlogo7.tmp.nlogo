@@ -272,7 +272,13 @@ to-report hasHome [x y]
 end
 
 to takeHumanHome [h]
-  set xhome [xhome] of h
+  let xh [xhome] of h
+  let yh [yhome] of h
+  (ifelse
+    rol <= 10 [ask patch xh yh [set nexploradors nexploradors + 1]]
+    rol > 10 and rol <= 40 [ask patch xh yh [set nnormals nnormals + 1]]
+    [ask patch xh yh [set ncaçadors ncaçadors + 1 ]])
+  set xhome
   set yhome [yhome] of h
 end
 
@@ -306,11 +312,8 @@ to joinHomes [h]
   ask patch xhomemine yhomemine [set ncaçadors 0 set nnormals 0 set nexploradors 0]
   set xhome xhomeOfH
   set yhome yhomeOfH
-
   ask patch xhomeOfH yhomeOfH [set ncaçadors ncaçadors + ncPatch set nexploradors nexploradors + nePatch set nnormals nnormals + nnPatch]
-  show "ncaçadors casa nova després de juntar-se"show [ncaçadors] of patch xhomeOfH yhomeOfH
-  show "nexploradors casa nova després de juntar-se"show [nexploradors] of patch xhomeOfH yhomeOfH
-  show "nnormals casa nova després de juntar-se"show [nnormals] of patch xhomeOfH yhomeOfH
+
 end
 
 to humanMoveHome
@@ -539,7 +542,7 @@ human-speed
 human-speed
 0
 1
-0.2
+1.0
 0.1
 1
 NIL
