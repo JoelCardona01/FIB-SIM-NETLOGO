@@ -64,15 +64,6 @@ to SETUP
 reset-ticks
 end
 
-to setRol
-  set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 40 normal. Caçador 41 a 100
-  (ifelse
-    rol <= 10 [ set color black ask patch xhome yhome [set nexploradors nexploradors + 1] ]
-    rol > 10 and rol <= 40 [ set color pink ask patch xhome yhome [set nnormals nnormals + 1] ]
-    rol > 40 [ set color yellow ask patch xhome yhome [set ncaçadors ncaçadors + 1] ]
-  )
-end
-
 to go
   ask mammoths [
     move mammoth-speed
@@ -91,7 +82,8 @@ to go
 
   ask humans [
 
-    if not any? other humans-here and xhome = (max-pxcor + 1) and yhome = (max-pycor + 1) [
+    ;
+    if not any? other humans-here and not humanHasHome [
       if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
       movehuman human-speed
     ]
@@ -111,7 +103,7 @@ to go
        ])
     ]
 
-    if any? other humans in-radius 2 and hasHome xhome yhome [
+    if any? other humans in-radius 2 and humanHasHome [
       let h one-of other humans in-radius 2
       if hasHome [xhome] of h [yhome] of h and patch xhome yhome != patch [xhome] of h [yhome] of h [
         let numHumansHome1 0
@@ -271,6 +263,20 @@ to go
 
 
   tick
+end
+
+
+to setRol
+  set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 40 normal. Caçador 41 a 100
+  (ifelse
+    rol <= 10 [ set color black ask patch xhome yhome [set nexploradors nexploradors + 1] ]
+    rol > 10 and rol <= 40 [ set color pink ask patch xhome yhome [set nnormals nnormals + 1] ]
+    rol > 40 [ set color yellow ask patch xhome yhome [set ncaçadors ncaçadors + 1] ]
+  )
+end
+
+to-report humanHasHome
+  report (xhome != (max-pxcor + 1) and yhome != (max-pycor + 1))
 end
 
 to-report hasHome [x y]
@@ -498,7 +504,7 @@ nHumansIni
 nHumansIni
 2
 50
-10.0
+5.0
 1
 1
 NIL
