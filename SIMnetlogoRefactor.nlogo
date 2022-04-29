@@ -108,10 +108,7 @@ to go
     ( ifelse
       rol > 10 and rol <= 40 [
       (ifelse
-        reproduceticks = 0  and hasHome xhome yhome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce [
-        face patch xhome yhome
-        movehuman human-speed
-        ]
+        humanCanReproduce [humanMoveHome]
         [move human-speed])
 
       if patch-here = patch xhome yhome and any? other humans-here [
@@ -293,6 +290,11 @@ to joinHomes [h]
   set yhome [yhome] of h
 end
 
+to humanMoveHome
+  face patch xhome yhome
+  movehuman human-speed
+end
+
 to movehuman [dist]
   forward dist
 end
@@ -311,6 +313,10 @@ to move [dist];
   ]
 
   forward dist
+end
+
+to-report humanCanReproduce
+   report (reproduceticks = 0  and humanHasHome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce)
 end
 
 to reproduce [ min-age birth-rate ]
@@ -518,7 +524,7 @@ nHumansIni
 nHumansIni
 2
 50
-5.0
+8.0
 1
 1
 NIL
