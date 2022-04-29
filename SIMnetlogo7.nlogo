@@ -207,7 +207,7 @@ to go
       set reproduceticks reproduceticks - 1
     ]
   ]
-  ask patches with [pcolor = red] [show (ncaçadors + nnormals + nexploradors)]
+
   forceHumanRoles
 
   tick
@@ -298,10 +298,16 @@ to joinHomes [h]
   let xhomemine xhome
   let yhomemine yhome
   let xhomeOfH [xhome] of h
-let yhomeOfH [yhome] of h
-  ask humans with [xhome = xhomemine and yhome = yhomemine] [set xhome xhomeOfH set yhome yhomeOfH]
+  let yhomeOfH [yhome] of h
+  ask other humans with [xhome = xhomemine and yhome = yhomemine] [set xhome xhomeOfH set yhome yhomeOfH]
+  let ncPatch [ncaçadors] of patch xhome yhome
+  let nePatch [nexploradors] of patch xhome yhome
+  let nnPatch [nnormals] of patch xhome yhome
+  ask patch xhomemine yhomemine [set ncaçadors 0 set nnormals 0 set nexploradors 0]
   set xhome xhomeOfH
   set yhome yhomeOfH
+  ask patch xhomeOfH yhomeOfH [set ncaçadors ncaçadors + ncPatch set nexploradors nexploradors + nePatch set nnormals nnormals + nnPatch]
+
 end
 
 to humanMoveHome

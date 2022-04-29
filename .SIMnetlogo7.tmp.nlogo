@@ -207,7 +207,7 @@ to go
       set reproduceticks reproduceticks - 1
     ]
   ]
-  ask patches with [pcolor = red] [show (ncaçadors + nnormals + nexploradors)]
+
   forceHumanRoles
 
   tick
@@ -296,12 +296,21 @@ end
 to joinHomes [h]
   ask patch xhome yhome [ set pcolor green - 0.25 - random-float 0.25 ]
   let xhomemine xhome
-  let yhomemine yhome]
+  let yhomemine yhome
   let xhomeOfH [xhome] of h
-let yhomeOfH [yhome] of h
-  ask humans with [xhome = xhomemine and yhome = yhomemine] [set xhome xhomeOfH set yhome yhomeOfH]
-  set xhome [xhome] of h
-  set yhome [yhome] of h
+  let yhomeOfH [yhome] of h
+  ask other humans with [xhome = xhomemine and yhome = yhomemine] [set xhome xhomeOfH set yhome yhomeOfH]
+  let ncPatch [ncaçadors] of patch xhome yhome
+  let nePatch [nexploradors] of patch xhome yhome
+  let nnPatch [nnormals] of patch xhome yhome
+  ask patch xhomemine yhomemine [set ncaçadors 0 set nnormals 0 set nexploradors 0]
+  set xhome xhomeOfH
+  set yhome yhomeOfH
+
+  ask patch xhomeOfH yhomeOfH [set ncaçadors ncaçadors + ncPatch set nexploradors nexploradors + nePatch set nnormals nnormals + nnPatch]
+  show "ncaçadors casa nova després de juntar-se"show [ncaçadors] of patch xhomeOfH yhomeOfH
+  show "nexploradors casa nova després de juntar-se"show [nexploradors] of patch xhomeOfH yhomeOfH
+  show "nnormals casa nova després de juntar-se"show [nnormals] of patch xhomeOfH yhomeOfH
 end
 
 to humanMoveHome
@@ -563,7 +572,7 @@ nHumansIni
 nHumansIni
 2
 50
-8.0
+14.0
 1
 1
 NIL
@@ -649,7 +658,7 @@ nMamoothsIni
 nMamoothsIni
 0
 100
-7.0
+9.0
 1
 1
 NIL
