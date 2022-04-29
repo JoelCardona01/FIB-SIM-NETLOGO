@@ -110,44 +110,38 @@ to go
       (ifelse
         humanCanReproduce [humanMoveHome]
         [move human-speed])
-
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
-        if [age] of humanhere > min-human-age-to-reproduce and [nreproductions] of humanhere < human-max-reproduction and [reproduceticks] of humanhere = 0 [
+        if otherHumanCanReproduce humanhere [
           reproduceHumans min-human-age-to-reproduce human-birth-rate
           move 0
         ]
       ]
     ]
-
-
-
     ;Aquesta part nomes la fan els exploradors.
-
       rol <= 10 [
-      	move human-speed 	
-        if any? mammoths in-radius 5 and xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 [
+      	move human-speed
+        ;Si hi ha un mamooth aprop, guardem la posicio i la pintem
+        if any? mammoths in-radius 5 and not mammothsFound [
             set xmammoths pxcor
             set ymammoths pycor
             ask patch-here [set pcolor grey]
          ]
-      	 if xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and hasHome xhome yhome [
-          	face patch xhome yhome
-        		movehuman human-speed
+         ;Si no estem a casa, hem trobat mamuts, i encara no estic llest per caçar, anem a casa
+      	 if mammothsFound and humanHasHome and not ready? and patch-here != patch xhome yhome[
+          	humanMoveHome
          ]
-         if patch-here = patch xhome yhome and xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = false [
-              let xmam xmammoths
-              let ymam ymammoths
-              let xh xhome
-              let yh yhome
-              ask humans with [rol > 40 and ready? = false and xhome = xh and yhome = yh] [ set xmammoths xmam  set ymammoths ymam ]
+         ;Si estic a casa, he trobat mamuts i encara no estic llest, informo als caçadors de la localitzacio dels mamuts
+         if patch-here = patch xhome yhome and mammothsFound and ready? = false [
+          reportMammothsLocation
          ]
+         ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
          if patch-here = patch xhome yhome and count (humans-here with [rol > 40  and xhome = [xhome] of self and yhome = [yhome] of self ] ) >= 1  [
               set ready? true
          ]
-        if xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1 and ready? = true [
-          	face patch xmammoths ymammoths
-         		movehuman human-speed
+        ;Si he trobat mamuts i estic llest, anem cap al mamut
+        if mammothsFound and ready? = true [
+          humanMoveMammoth
         ]
      ]
 
@@ -315,8 +309,29 @@ to move [dist];
   forward dist
 end
 
+to humanMoveMammoth
+	face patch xmammoths ymammoths
+	movehuman human-speed
+end
+
+to reportMammothsLocation
+  let xmam xmammoths
+  let ymam ymammoths
+  let xh xhome
+  let yh yhome
+  ask humans with [rol > 40 and ready? = false and xhome = xh and yhome = yh] [ set xmammoths xmam  set ymammoths ymam ]
+end
+
+to-report mammothsFound
+  report (xmammoths != max-pxcor + 1 and ymammoths != max-pycor + 1)
+end
+
 to-report humanCanReproduce
    report (reproduceticks = 0  and humanHasHome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce)
+end
+
+to-report otherHumanCanReproduce [h]
+  report ([age] of h > min-human-age-to-reproduce and [nreproductions] of h < human-max-reproduction and [reproduceticks] of h = 0)
 end
 
 to reproduce [ min-age birth-rate ]
@@ -458,7 +473,7 @@ mammoth-speed
 mammoth-speed
 0
 1
-0.2
+0.05
 0.05
 1
 patches
