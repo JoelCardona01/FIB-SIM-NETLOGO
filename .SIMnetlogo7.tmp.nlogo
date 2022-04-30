@@ -13,6 +13,7 @@ globals [
   mammoth-max-reproduction
   human-max-reproduction
   reproducecooldown
+
   human-birth-rate
   min-human-age-to-reproduce
 ]
@@ -27,9 +28,9 @@ to SETUP
   ask patches [ set ncaçadors 0 set nnormals 0 set nexploradors 0]
 
   set mammoth-birth-rate 30
-  set mammoth-max-age (60 * 365)
+  set mammoth-max-age (50 * 365)
   set mammoth-max-reproduction 1
-  set reproducecooldown 270
+  set reproducecooldown 300
   set human-max-age (25 * 365)
   set human-birth-rate 20
   set min-human-age-to-reproduce 12 * 365
@@ -66,11 +67,21 @@ end
 
 to go
   ask mammoths [
-    move mammoth-speed
-    if any? other mammoths-here and [age] of one-of other mammoths-here > (3 * 365) and [reproduceticks] of one-of other mammoths-here = 0 [
+
+    (ifelse reproduceticks = 0 and age > (3 * 365) and nreproductions = 0  [
+      (ifelse any? other mammoths-here and [age] of one-of other mammoths-here > (3 * 365) and [reproduceticks] of one-of other mammoths-here = 0 [
         reproduce (3 * 365) mammoth-birth-rate
+      ]
+      [if any? mammoths [
+          face min-one-of other mammoths [distance myself]
+          moveDirectly mammoth-speed
+         ]
+      ]
+      )
     ]
-    die-naturally-mammoth
+    [move mammoth-speed])
+
+
     set age age + 1
     if ticks mod 365 = 0 [
       set nreproductions 0
@@ -78,6 +89,8 @@ to go
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
+    die-naturally-mammoth
+    die-of-overpopulation
   ]
 
   ask humans [
@@ -120,7 +133,7 @@ to go
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
         if otherHumanCanReproduce humanhere [
-
+              show "puede shingar"
           reproduceHumans min-human-age-to-reproduce human-birth-rate
           move 0
         ]
@@ -183,7 +196,7 @@ to go
               ;vaig a per el mamut mes proper si no hi ha cap aqui
               any? mammoths in-radius 7 [
                  face min-one-of mammoths [distance myself]
-                 movehuman human-speed
+                 moveDirectly human-speed
               ]
                 ;si no hi veig cap mamut, desisteixo de caçar al mamut
                 [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false])
@@ -195,7 +208,7 @@ to go
               any? mammoths-here and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false  fight ]
               any? mammoths in-radius 7 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
                  face min-one-of mammoths [distance myself]
-                 movehuman human-speed
+                 moveDirectly human-speed
               ]
               [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false ]
              )
@@ -323,21 +336,20 @@ end
 
 to humanMoveHome
   face patch xhome yhome
-  movehuman human-speed
+  moveDirectly human-speed
 end
 
-to movehuman [dist]
+to moveDirectly [dist]
+
   forward dist
 end
 
 to moveNearestHuman
   if any? humans[face min-one-of other humans [distance myself] ];s'encara cap on hi ha la persona més propera
-  movehuman human-speed
+  moveDirectly human-speed
 end
 
 to move [dist];
-
-
   right random 50
   left random 50
 
@@ -355,7 +367,6 @@ to move [dist];
 
     ]
   ]
-
   [
     while [patch-ahead dist = nobody] [
      right random 50
@@ -368,7 +379,7 @@ end
 
 to humanMoveMammoth
 	face patch xmammoths ymammoths
-	movehuman human-speed
+	moveDirectly human-speed
 end
 
 to reportMammothsLocation
@@ -392,7 +403,7 @@ to-report humanCanReproduce
 end
 
 to-report otherHumanCanReproduce [h]
-  report ([age] of h > min-human-age-to-reproduce and [nreproductions] of h < human-max-reproduction and [reproduceticks] of h = 0)
+  report ([age] of h > min-human-age-to-reproduce  and [reproduceticks] of h = 0)
 end
 
 to reproduce [ min-age birth-rate ]
@@ -432,7 +443,9 @@ to die-naturally-mammoth
     die
   ]
 end
-
+to die-of-overpopulation
+  if count mammoths > 50 [ask mammoths [if random 100 < 5 [die]]] ; per sobrepoblació quan hi ha més de 50 mammoths, cada mammoth té un 5% de probabilitats de morir
+end
 
 to fight
   if any? mammoths-here [
@@ -586,7 +599,7 @@ human-speed
 human-speed
 0
 1
-0.5
+0.4
 0.1
 1
 NIL
@@ -617,9 +630,9 @@ SLIDER
 232
 nHumansIni
 nHumansIni
-2
+5
 50
-15.0
+10.0
 1
 1
 NIL
@@ -705,7 +718,7 @@ nMamoothsIni
 nMamoothsIni
 0
 50
-15.0
+14.0
 1
 1
 NIL
