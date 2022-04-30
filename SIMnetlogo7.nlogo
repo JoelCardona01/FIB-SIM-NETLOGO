@@ -861,7 +861,7 @@ Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go
 
 ## COSES A PROVAR
 
-Seria interessant provar el que s'ha esmentat a l'apartat diferent fent diverses simulacions modificant els valors dels sliders.
+Seria interessant provar el que s'ha esmentat a l'apartat anterior, fent diverses simulacions modificant els valors dels sliders.
 Per exemple, quan la simulació comença amb pocs "humans" o amb una bona quantitat de "humans" però velocitat d'aquests molt baixa, els "humans" acaben morint molt de pressa per gana. Tanmateix, si la simulació comença amb molts "humans" i bona velocitat, els mamoths acabaran per extingir-se tot i que no sempre ja que depén de molts més factors.
 
 També, si es configura una velocitat molt alta dels "mammoths" o la velocitat dels "mammoths" és igual o major a la dels "humans", aquests són més difícils de caçar i doncs també provoca l'extinció per gana dels "humans". Així com si hi ha pocs mammoths el més probable és que estiguin més dispersos i als humans els costi trobar-los i doncs caçar-los.
