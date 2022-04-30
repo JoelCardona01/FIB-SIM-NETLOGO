@@ -47,7 +47,7 @@ to SETUP
     set age random (60 * 365)
     set nreproductions 0
     set reproduceticks 0
-    move-to one-of patches
+    move-to one-of patches with [not any? turtles-here]
   ]
 
    create-humans nHumansIni [
@@ -64,7 +64,7 @@ to SETUP
     set ready? false
     set energy 500; Va de 0 a 500
     set hasFood false
-    move-to one-of patches
+    move-to one-of patches with [not any? turtles-here]
 
   ]
 reset-ticks
@@ -77,7 +77,7 @@ to go
       (ifelse any? other mammoths-here and [age] of one-of other mammoths-here > (3 * 365) and [reproduceticks] of one-of other mammoths-here = 0 [
         reproduce (3 * 365) mammoth-birth-rate
       ]
-      [if any? mammoths [
+      [if count mammoths > 1 [
           face min-one-of other mammoths [distance myself]
           moveDirectly mammoth-speed
          ]
@@ -133,7 +133,7 @@ to go
     ( ifelse
       rol > 10 and rol <= 40 [
       (ifelse
-        humanCanReproduce [humanMoveHome]
+        humanCanReproduce  [humanMoveHome]
         [move human-speed])
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
@@ -648,7 +648,7 @@ nHumansIni
 nHumansIni
 5
 50
-13.0
+50.0
 1
 1
 NIL
@@ -734,7 +734,7 @@ nMamoothsIni
 nMamoothsIni
 0
 50
-14.0
+50.0
 1
 1
 NIL
@@ -840,12 +840,21 @@ moveToHome: Envia a tots els humans amb casa a la seva casa.
 
 ## COSES A OBSERVAR
 
-Hi ha diferents grà
+Hi ha diferents gràfiques per tal d'observar el que passa durant la simulació. 
+Les grafiques de la zona dreta de la pantalla fan referència als humans, on hi ha una gràfica per cada rol que mostra els humans vius per aquell rol. També hi ha una gràfica que conta el nombre total d'humans vius. Anb aquestes gràfiques es pot observar la fluctuació del nombre d'humans, com funciona la reproducció i l'assignació de rols. També hi ha una gràfica per tal de saber quants humans han mort de gana (per energy = 0).
 
+A la part esquerra de la pantalla hi ha dues gràfiques, una per saber el nombre de mammoths vius (que serveix per tal de veure la reproducció) i una altre que mostra el nombre d'entitats executats. En aquesta gràfica "executions" es pot veure en vermell el nombre de humans matats a mà de mammoths i en blau el nombre de mammoths matats per humans. Aquesta gràfica serveix per veure com funciona la caça. 
+
+Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go", que els diferents paràmetres configurables influeixen molt en el resultat de la simulació, on en alguns casos els humans s'extingeixen i en altres casos els humans aconsegueixen sobreviure. 
 
 ## COSES A PROVAR
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+Seria interessant provar el que s'ha esmentat a l'apartat diferent fent diverses simulacions modificant els valors dels sliders. 
+Per exemple, quan la simulació comença amb pocs humans o amb una bona quantitat d'humans pero velocitat d'aquests molt baixa, els humans acaben morint molt ràpid per gana. Tan mateix, si la simulació comença amb molts humans i bona velocitat, els mamoths acabaran per extingir-se.
+
+També, si es configura una velocitat molt alta dels mammoths o la velocitat dels mammoths es igual o major a la dels humans, aquests son més difícils de caçar i dons també provoca l'extinció per gana del humans.
+
+
 
 
 ## CREDITS
