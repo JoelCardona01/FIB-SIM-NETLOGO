@@ -123,7 +123,7 @@ to go
         joinHomes h
       ]
     ]
-    ifelse hasFood = true and hasHome xhome yhome [
+    ifelse hasFood = true and hasHome xhome yhome and energy < 400 [
       let energyTmp energy + 250
       ifelse patch-here = patch xhome yhome [set energy min (list energyTmp 500) set hasFood false]
       [humanMoveHome]
@@ -230,7 +230,7 @@ to go
       set reproduceticks reproduceticks - 1
     ]
 
-    (ifelse rol > 40 [if any? mammoths in-radius 7 [fight]]
+    (ifelse rol > 40 [if any? mammoths in-radius 10 [fight]]
     any? mammoths-here [fight])
     die-naturally-human
     die-of-hunger
@@ -344,6 +344,7 @@ to humanMoveHome
 end
 
 to moveDirectly [dist]
+  ; si no son caçadors intenten evitar els mammoths fent una mica de volta
   if breed = humans and rol > 10 and rol <= 40 [
     let patchAhead patch-ahead dist
     let mustMove false
@@ -367,7 +368,7 @@ end
 to move [dist];
   right random 50
   left random 50
-
+     ;si no son caçadors intenten evitar els mammoths fent una mica de volta
     (ifelse breed = humans and rol > 10 and rol <= 40 [
     let patchAhead patch-ahead dist
     let mustMove false
@@ -381,6 +382,7 @@ to move [dist];
 
     ]
   ]
+    ;sino, si son caçadors o mammoths es mouen random
   [
     while [patch-ahead dist = nobody] [
      right random 50
@@ -615,7 +617,7 @@ human-speed
 human-speed
 0
 1
-0.4
+0.5
 0.1
 1
 NIL
@@ -648,7 +650,7 @@ nHumansIni
 nHumansIni
 5
 50
-20.0
+30.0
 1
 1
 NIL
@@ -734,7 +736,7 @@ nMamoothsIni
 nMamoothsIni
 0
 50
-50.0
+30.0
 1
 1
 NIL
@@ -800,7 +802,7 @@ PENS
 @#$#@#$#@
 ## QUE ÉS?
 
-El nostre model simula agents de reflex basat en models i agents de reflex simple. Hi ha humans i "mammoths". Els "humans" són els agents de reflex basat en models, aquests es divideixen en tres rols; caçadors, exploradors i normals. Aquests rols s'assignen de manera aleatòria per percentatges, però se'n fa un petit control per tal que a la casa hi hagi un cert nombre de "humans" amb cada rol per sobreviure. Cada rol té un color assignat i uns objectius diferents.
+El nostre model simula agents de reflex basat en models i agents de reflex simple. Hi ha "humans" i "mammoths". Els "humans" són els agents de reflex basat en models, aquests es divideixen en tres rols; caçadors, exploradors i normals. Aquests rols s'assignen de manera aleatòria per percentatges, però se'n fa un petit control per tal que a la casa hi hagi un cert nombre de "humans" amb cada rol per sobreviure. Cada rol té un color assignat i uns objectius diferents.
 Els "mammoths" són els agents de reflex simple; només es reprodueixen, es mouen i moren o maten "humans".
 
 ## COM FUNCIONA?
@@ -839,18 +841,18 @@ moveToHome: Envia a tots els "humans" amb casa a la seva casa.
 ## COSES A OBSERVAR
 
 Hi ha diferents gràfiques per tal d'observar el que passa durant la simulació.
-Les gràfiques de la zona dreta de la pantalla fan referència als "humans", on hi ha una gràfica per cada rol que mostra els "humans" vius per aquell rol. També hi ha una gràfica que conta el nombre total d"humans" vius. Amb aquestes gràfiques es pot veure la fluctuació del nombre d'humans, com funciona la reproducció i l'assignació de rols. També hi ha una gràfica per tal de saber quants humans han mort de gana (per energy = 0).
+Les gràfiques de la zona dreta de la pantalla fan referència als "humans", on hi ha una gràfica per cada rol que mostra els "humans" vius per aquell rol. També hi ha una gràfica que conta el nombre total de "humans" vius. Amb aquestes gràfiques es pot veure la fluctuació del nombre de "humans", com funciona la reproducció i l'assignació de rols. També hi ha una gràfica per tal de saber quants "humans" han mort de gana (per energy = 0).
 
-A la part esquerra de la pantalla hi ha dues gràfiques, una per saber el nombre de "mammoths" vius (que serveix per a veure la reproducció) i una altra que mostra el nombre d'entitats executades. En aquesta gràfica "executions" es pot veure en vermell el nombre de humans matats a mà de "mammoths" i en blau el nombre de "mammoths" matats per humans. Aquesta gràfica serveix per veure com funciona la caça.
+A la part esquerra de la pantalla hi ha dues gràfiques, una per saber el nombre de "mammoths" vius (que serveix per a veure la reproducció) i una altra que mostra el nombre d'entitats executades. En aquesta gràfica "executions" es pot veure en vermell el nombre de "humans" matats a mà de "mammoths" i en blau el nombre de "mammoths" matats per "humans". Aquesta gràfica serveix per veure com funciona la caça.
 
-Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go", que els diferents paràmetres configurables influeixen molt en el resultat de la simulació, on en alguns casos els humans s'extingeixen i en altres casos els humans aconsegueixen sobreviure.
+Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go", que els diferents paràmetres configurables influeixen molt en el resultat de la simulació, on en alguns casos els "humans" s'extingeixen i en altres casos els "humans" aconsegueixen sobreviure.
 
 ## COSES A PROVAR
 
 Seria interessant provar el que s'ha esmentat a l'apartat diferent fent diverses simulacions modificant els valors dels sliders.
-Per exemple, quan la simulació comença amb pocs humans o amb una bona quantitat d'humans però velocitat d'aquests molt baixa, els humans acaben morint molt de pressa per gana. Tanmateix, si la simulació comença amb molts humans i bona velocitat, els mamoths acabaran per extingir-se.
+Per exemple, quan la simulació comença amb pocs "humans" o amb una bona quantitat de "humans" però velocitat d'aquests molt baixa, els "humans" acaben morint molt de pressa per gana. Tanmateix, si la simulació comença amb molts "humans" i bona velocitat, els mamoths acabaran per extingir-se tot i que no sempre ja que depén de molts més factors.
 
-També, si es configura una velocitat molt alta dels "mammoths" o la velocitat dels "mammoths" és igual o major a la dels humans, aquests són més difícils de caçar i doncs també provoca l'extinció per gana dels humans.
+També, si es configura una velocitat molt alta dels "mammoths" o la velocitat dels "mammoths" és igual o major a la dels "humans", aquests són més difícils de caçar i doncs també provoca l'extinció per gana dels "humans". Així com si hi ha pocs mammoths el més probable és que estiguin més dispersos i als humans els costi trobar-los i doncs caçar-los.
 
 ## CREDITS
 
