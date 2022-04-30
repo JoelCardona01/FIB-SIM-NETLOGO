@@ -1,6 +1,6 @@
 breed [ mammoths mammoth ]
 breed [ humans human ]
-humans-own [xhome yhome rol xmammoths ymammoths ready?]
+humans-own [xhome yhome rol xmammoths ymammoths ready? energy hasFood]
 turtles-own [ age nreproductions reproduceticks]
 patches-own [ncaçadors nexploradors nnormals]
 
@@ -58,6 +58,8 @@ to SETUP
     set ymammoths max-pycor + 1
     set rol 30 ; Inicialment tots son normals
     set ready? false
+    set energy 100; Va de 0 a 100
+    set hasFood false
     move-to one-of patches
 
   ]
@@ -105,7 +107,11 @@ to go
         joinHomes h
       ]
     ]
-
+    ifelse hasFood = true [
+      if patch-here = patch xhome yhome [set energy max ((energy + 50) 100) ]
+      humanMoveHome
+    ]
+    [
     ;Aquesta part només la fan els rositas
     ( ifelse
       rol > 10 and rol <= 40 [
@@ -197,11 +203,11 @@ to go
             xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 and ready? = false [ move human-speed]
            )
         ]
-    )
+    )]
 
     die-naturally-human
     set age age + 1
-
+    set energy energy - 1
      if ticks mod 365 = 0 [
       set nreproductions 0
     ]
@@ -405,6 +411,7 @@ to reproduceHumans [min-age birth-rate]
     set nreproductions nreproductions + 1
     set reproduceticks reproducecooldown
     hatch 1 [
+      set energy 100
       set age 0
       set xhome [xhome] of myself
       set yhome [yhome] of myself
@@ -432,7 +439,12 @@ end
 
 to fight
   if any? mammoths-here [
-    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [ask one-of mammoths-here [die]]
+    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [
+      let xh xhome
+      let yh yhome
+      ask humans with [xhome = xh and yhome = yh] [set hasFood true]
+      ask one-of mammoths-here [die]
+      ]
     [
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
@@ -524,12 +536,12 @@ NIL
 SLIDER
 13
 157
-206
+193
 190
 mammoth-speed
 mammoth-speed
 0
-1
+0.2
 0.05
 0.05
 1
@@ -596,7 +608,7 @@ nHumansIni
 nHumansIni
 2
 50
-9.0
+11.0
 1
 1
 NIL
@@ -681,8 +693,8 @@ SLIDER
 nMamoothsIni
 nMamoothsIni
 0
-100
-12.0
+50
+25.0
 1
 1
 NIL
