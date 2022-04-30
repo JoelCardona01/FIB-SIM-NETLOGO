@@ -122,29 +122,35 @@ to go
     ]
     ;Aquesta part nomes la fan els exploradors.
       rol <= 10 [
-      	move human-speed
         ;Si hi ha un mamooth aprop, guardem la posicio i la pintem
-        if any? mammoths in-radius 5 and not mammothsFound [
-            set xmammoths pxcor
+        (ifelse any? mammoths in-radius 5 and not mammothsFound [
+        ifelse patch-here = patch xhome yhome
+          [set xmammoths pxcor + 1
+            set ymammoths pycor + 1
+            ask patch xmammoths ymammoths [set pcolor grey]
+          ]
+          [set xmammoths pxcor
             set ymammoths pycor
-            ask patch-here [set pcolor grey]
+            ask patch-here [set pcolor grey]]
          ]
          ;Si no estem a casa, hem trobat mamuts, i encara no estic llest per caçar, anem a casa
-      	 if mammothsFound and humanHasHome and not ready? and patch-here != patch xhome yhome[
+      	 mammothsFound and humanHasHome and not ready? and patch-here != patch xhome yhome[
           	humanMoveHome
          ]
          ;Si estic a casa, he trobat mamuts i encara no estic llest, informo als caçadors de la localitzacio dels mamuts
-         if patch-here = patch xhome yhome and mammothsFound and ready? = false [
+         patch-here = patch xhome yhome and mammothsFound and ready? = false [
           reportMammothsLocation
-         ]
-         ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
-         if patch-here = patch xhome yhome and enoughHuntersHere  [
+            ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
+          if enoughHuntersHere [
               set ready? true
+            ]
          ]
         ;Si he trobat mamuts i estic llest, anem cap al mamut
-        if mammothsFound and ready? = true [
-          humanMoveMammoth
+        mammothsFound and ready? = true [
+            ifelse patch-here = patch xmammoths ymammoths [set xmammoths  max-pxcor + 1  set ymammoths  max-pycor + 1 set ready? false]
+            [humanMoveMammoth]
         ]
+          [move human-speed])
      ]
 
 
@@ -204,7 +210,7 @@ to go
       set reproduceticks reproduceticks - 1
     ]
 
-    if any? mammoths in-radius 1 [fight]
+    if any? mammoths-here [fight]
   ]
 
   forceHumanRoles
@@ -326,29 +332,33 @@ to moveNearestHuman
 end
 
 to move [dist];
+
+
   right random 50
   left random 50
-  if breed = mammoths [
-    while [patch-ahead dist = nobody] [
-     right random 50
-     left random 50
-    ]
-  ]
 
-  if breed = humans and rol > 10 and rol <= 40 [
+    (ifelse breed = humans and rol > 10 and rol <= 40 [
     let patchAhead patch-ahead dist
     let mustMove false
     ;let i = 0
-    if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (1 + dist) [set mustMove true]] ]
+    if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (dist) [set mustMove true]] ]
     while [patch-ahead dist = nobody or mustMove ] [
       right random 50
       left random 50
       set patchAhead patch-ahead dist
       set mustMove false
-      if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (1 + dist) [set mustMove true]] ]
+      if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (dist) [set mustMove true]] ]
 
     ]
   ]
+
+  [
+    while [patch-ahead dist = nobody] [
+     right random 50
+     left random 50
+    ]
+  ])
+
   forward dist
 end
 
@@ -421,8 +431,8 @@ end
 
 
 to fight
-  if any? mammoths in-radius 1 [
-    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [ask one-of mammoths in-radius 1 [die]]
+  if any? mammoths-here [
+    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [ask one-of mammoths-here [die]]
     [
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
@@ -553,7 +563,7 @@ human-speed
 human-speed
 0
 1
-0.6
+0.4
 0.1
 1
 NIL
@@ -586,7 +596,7 @@ nHumansIni
 nHumansIni
 2
 50
-50.0
+9.0
 1
 1
 NIL
@@ -672,7 +682,7 @@ nMamoothsIni
 nMamoothsIni
 0
 100
-15.0
+12.0
 1
 1
 NIL
