@@ -13,9 +13,11 @@ globals [
   mammoth-max-reproduction
   human-max-reproduction
   reproducecooldown
-
   human-birth-rate
   min-human-age-to-reproduce
+  humans-executed
+  mammoths-executed
+  humans-dead-from-hunger
 ]
 
 to moveToHome
@@ -34,6 +36,9 @@ to SETUP
   set human-max-age (25 * 365)
   set human-birth-rate 20
   set min-human-age-to-reproduce 12 * 365
+  set humans-executed 0
+  set mammoths-executed 0
+  set humans-dead-from-hunger 0
 
   create-mammoths nMamoothsIni [
     set shape "mammoth"
@@ -340,7 +345,18 @@ to humanMoveHome
 end
 
 to moveDirectly [dist]
-
+  if breed = humans and rol > 10 and rol <= 40 [
+    let patchAhead patch-ahead dist
+    let mustMove false
+    if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (dist) [set mustMove true]] ]
+    while [patch-ahead dist = nobody or mustMove ] [
+      right random 50
+      left random 50
+      set patchAhead patch-ahead dist
+      set mustMove false
+      if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (dist) [set mustMove true]] ]
+    ]
+  ]
   forward dist
 end
 
@@ -356,7 +372,6 @@ to move [dist];
     (ifelse breed = humans and rol > 10 and rol <= 40 [
     let patchAhead patch-ahead dist
     let mustMove false
-    ;let i = 0
     if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (dist) [set mustMove true]] ]
     while [patch-ahead dist = nobody or mustMove ] [
       right random 50
@@ -454,8 +469,10 @@ to fight
       let yh yhome
       ask humans with [xhome = xh and yhome = yh] [set hasFood true]
       ask one-of mammoths-here [die]
+      set mammoths-executed mammoths-executed + 1
       ]
     [
+    set humans-executed humans-executed + 1
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
       (ifelse
@@ -464,7 +481,8 @@ to fight
         [set ncaçadors ncaçadors - 1])
       ]]
     if hasHome xhome yhome [ask patch xhome yhome [if (nnormals + ncaçadors + nexploradors) <= 0 [set pcolor green - 0.25 - random-float 0.25  ]]]
-    die ]  )
+    die
+    ]  )
   ]
 end
 
@@ -484,6 +502,7 @@ end
 
 to die-of-hunger
   if energy = 0 [
+    set humans-dead-from-hunger humans-dead-from-hunger + 1
     show "me muero de hambre xd"
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
@@ -497,10 +516,10 @@ to die-of-hunger
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-232
-68
-683
-520
+244
+18
+695
+470
 -1
 -1
 7.2623
@@ -524,10 +543,10 @@ ticks
 30.0
 
 BUTTON
-25
-41
-96
-74
+15
+427
+86
+460
 NIL
 SETUP
 NIL
@@ -541,10 +560,10 @@ NIL
 1
 
 BUTTON
-125
-42
-188
-75
+113
+426
+176
+459
 NIL
 go
 T
@@ -558,10 +577,10 @@ NIL
 1
 
 SLIDER
-13
-157
-193
-190
+509
+572
+689
+605
 mammoth-speed
 mammoth-speed
 0
@@ -573,10 +592,10 @@ patches
 HORIZONTAL
 
 PLOT
-13
-284
-213
-434
+16
+19
+216
+169
 num mammoths
 NIL
 NIL
@@ -591,10 +610,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count mammoths"
 
 SLIDER
-12
-115
-195
-148
+254
+570
+427
+603
 human-speed
 human-speed
 0
@@ -606,10 +625,10 @@ NIL
 HORIZONTAL
 
 PLOT
-10
-446
-210
-596
+769
+22
+969
+172
 num humans
 NIL
 NIL
@@ -624,10 +643,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count humans"
 
 SLIDER
-13
-199
-185
-232
+254
+527
+426
+560
 nHumansIni
 nHumansIni
 5
@@ -639,10 +658,10 @@ NIL
 HORIZONTAL
 
 PLOT
-796
-74
-996
-224
+1044
+25
+1244
+175
 num cazadores
 NIL
 NIL
@@ -657,10 +676,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count humans with [rol >= 51]"
 
 PLOT
-1047
-77
-1247
-227
+1044
+187
+1244
+337
 num normals
 NIL
 NIL
@@ -675,10 +694,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count humans with [rol <= 50 and rol > 10]"
 
 PLOT
-929
-261
-1129
-411
+1044
+346
+1244
+496
 num exploradors
 NIL
 NIL
@@ -693,10 +712,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count humans with [rol <= 10]"
 
 BUTTON
-745
-449
-851
-482
+707
+568
+813
+601
 moveToHome
 moveToHome
 NIL
@@ -710,10 +729,10 @@ NIL
 1
 
 SLIDER
-17
-243
-189
-276
+510
+527
+682
+560
 nMamoothsIni
 nMamoothsIni
 0
@@ -723,6 +742,63 @@ nMamoothsIni
 1
 NIL
 HORIZONTAL
+
+PLOT
+16
+179
+216
+329
+Executions
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"pen-2" 1.0 0 -5298144 true "" "plot humans-executed"
+"pen-1" 1.0 0 -13345367 true "" "plot mammoths-executed"
+
+TEXTBOX
+21
+334
+178
+362
+Humans executed by mammoths
+11
+15.0
+1
+
+TEXTBOX
+21
+351
+198
+379
+Mammoths executed by humans
+11
+105.0
+1
+
+PLOT
+769
+185
+969
+335
+Dead humans of hunger
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
