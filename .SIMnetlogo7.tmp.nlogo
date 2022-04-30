@@ -123,7 +123,7 @@ to go
         joinHomes h
       ]
     ]
-    ifelse hasFood = true [
+    ifelse hasFood = true and hasHome xhome yhome [
       let energyTmp energy + 250
       ifelse patch-here = patch xhome yhome [set energy min (list energyTmp 500) set hasFood false]
       [humanMoveHome]
@@ -133,7 +133,7 @@ to go
     ( ifelse
       rol > 10 and rol <= 40 [
       (ifelse
-        humanCanReproduce  [humanMoveHome]
+        humanCanReproduce and hasHome xhome yhome [humanMoveHome]
         [move human-speed])
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
@@ -648,7 +648,7 @@ nHumansIni
 nHumansIni
 5
 50
-50.0
+20.0
 1
 1
 NIL
@@ -800,62 +800,57 @@ PENS
 @#$#@#$#@
 ## QUE ÉS?
 
-El nostre model simula agents de reflex basat en models i agents de reflex simple. Hi ha humans i mammoths. Els humans són els agents de reflex basat en models, aquests es divideixen en tres rols; caçadors, exploradors i "normals" (que són els agents encarregats de la reproducció). Aquests rols s'assignen de manera aleatoria per percentatges però s'en fa un petit control per tal que a la casa hi hagi un cert nombre d'humans amb cada rol per sobreviure. Cada rol té un color assignat i uns objectius diferents. Els mammoths són els agents de reflex simple; només es reprodueixen, es mouen i moren o maten humans.
-
+El nostre model simula agents de reflex basat en models i agents de reflex simple. Hi ha humans i "mammoths". Els "humans" són els agents de reflex basat en models, aquests es divideixen en tres rols; caçadors, exploradors i normals. Aquests rols s'assignen de manera aleatòria per percentatges, però se'n fa un petit control per tal que a la casa hi hagi un cert nombre de "humans" amb cada rol per sobreviure. Cada rol té un color assignat i uns objectius diferents.
+Els "mammoths" són els agents de reflex simple; només es reprodueixen, es mouen i moren o maten "humans".
 
 ## COM FUNCIONA?
 
-Humans: 
-Els humans poden morir de tres maneres; per gana, per edat o assessinat per un mammoth.
+Humans:
+Els "humans" poden morir de tres maneres; per gana, per edat o assassinat per un mammoth.
 
-Caçadors: Grocs. S'encarreguen d'anar a les zones marcades pels exploradors per tal de matar mammoths i portar el menjar a casa. El percentatge assignat és del 60%.
+Caçadors: Grocs. S'encarreguen d'anar a les zones marcades pels exploradors per tal de matar "mammoths" i portar el menjar a casa. El percentatge assignat és del 60%.
 
-Exploradors: Negres. S'encarreguem de buscar on hi ha mammoths per tal de avisar als caçadors a on anar-los a buscar. Quan els troba, recorda la zona i torna a casa per tal de comunicar la zona als caçadors i esperar-los per guiar-los fins a allà.
+Exploradors: Negres. S'encarreguen de buscar on hi ha "mammoths" per tal d'avisar als caçadors a on anar-los a buscar. Quan els troba, recorda la zona i torna a casa per tal de comunicar la zona als caçadors i esperar-los per guiar-los fins allà. El percentatge assignat és del 10%.
 
-Normals: Roses. S'encarreguen de la reproducció de l'especie per tal d'evitar l'extinció d'aquesta. Només es poden reporduir una vegada cada 9 mesos (270 ticks) i a partir d'una certa edat (12 anys = 12*365 ticks).
+Normals: Roses. S'encarreguen de la reproducció de l'espècie per tal d'evitar l'extinció d'aquesta. Només es poden reproduir una vegada cada 9 mesos (270 ticks) i a partir d'una certa edat (12 anys = 12*365 ticks) i ho fan a casa.
 
 Cases:
-Els humans s'agrupen en cases. Aquestes es veuen com a un cuadrat de color vermell. Si dos humans sense casa es troben, aleshores aquests crearan una on hi viuran junts. En canvi, si dos humans es troben i un d'ells no te casa es pot unir la persona a la casa de l'humà si aquesta no te casa o es poden juntar les dues cases en una si el nombre de persones total no és major a 20.
+Els "humans" s'agrupen en cases. Aquestes es veuen com a un quadrat de color vermell i cada humà recorda la localització de la seva casa. Si dos humans sense casa es troben, aleshores aquests crearan una on hi viuran junts. En canvi, si dos humans es troben i un d'ells té casa, el que no en té es pot unir a la casa de l'altre o es poden ajuntar les dues cases en una, si els dos "humans" en tenen i si el nombre de persones total no és major a 20.
 
 Mammoths:
-Els mammoths es reprodueixen entre si. Quan es poden reproduir s'apropen al mammoth més proper i així es formen les zones de mammoths. Quan un mammoth i huma es troben hi ha una probabilitat que el mammoth mati a l'huma en comptes que l'huma mati al mammoth. Un altre manera de morir dels mammoths és per sobrepoblació, quan hi ha masses mammoths, cada un té una probabilitat del 5% de morir.
-
+Els "mammoths" es reprodueixen entre si. Quan es poden reproduir s'apropen al mammoth més proper i així es formen les zones de "mammoths". Quan un mammoth i human es troben hi ha una probabilitat que el mammoth mati a l'humà en comptes que l'humà mati al mammoth. Una altra manera de morir dels "mammoths" és per sobrepoblació, quan hi ha masses "mammoths", cada un té una probabilitat del 5% de morir.
 
 ## COM UTILITZAR-HO
 
-SETUP: Neteja el món i crea el nombre d'humans i mammoths especificats en els sliders nHumansIni i nMammothsIni respectivament. Tots els humans es creen amb rol normal, amb una edat aleatoria, sense casa, amb capacitat de reproduir-se si tenen l'edat i amb l'energia al 100%. Tots els mammoths es creen amb una edat random, i amb capacitat de reproduir-se si tenen l'edat mínima. Totes les tortugues apareixen en un lloc aleatori.
+SETUP: Neteja el món i crea el nombre de "humans" i "mammoths" especificats en els sliders nHumansIni i nmammothsIni respectivament. Tots els "humans" es creen amb rol normal, amb una edat aleatòria, sense casa, amb capacitat de reproduir-se si tenen l'edat i amb l'energia al 100%. Tots els "mammoths" es creen amb una edat random, i amb capacitat de reproduir-se si tenen l'edat mínima. Totes les tortugues apareixen en un lloc aleatori.
 
 GO: Comença la simulació.
 
-nHumansIni: Especifica el nombre inicial d'humans.
+nHumansIni: Especifica el nombre inicial de "humans".
 
-nMammothsIni: Especifica el nombre inicial de mammoths.
+nMammothsIni: Especifica el nombre inicial de "mammoths".
 
-human-speed: Especifica la velocitat dels humans.
+human-speed: Especifica la velocitat dels "humans".
 
-mammoth-speed: Especifica la velocitat dels mammoths.
+mammoth-speed: Especifica la velocitat dels "mammoths".
 
-moveToHome: Envia a tots els humans amb casa a la seva casa.
-
+moveToHome: Envia a tots els "humans" amb casa a la seva casa.
 
 ## COSES A OBSERVAR
 
-Hi ha diferents gràfiques per tal d'observar el que passa durant la simulació. 
-Les grafiques de la zona dreta de la pantalla fan referència als humans, on hi ha una gràfica per cada rol que mostra els humans vius per aquell rol. També hi ha una gràfica que conta el nombre total d'humans vius. Anb aquestes gràfiques es pot observar la fluctuació del nombre d'humans, com funciona la reproducció i l'assignació de rols. També hi ha una gràfica per tal de saber quants humans han mort de gana (per energy = 0).
+Hi ha diferents gràfiques per tal d'observar el que passa durant la simulació.
+Les gràfiques de la zona dreta de la pantalla fan referència als "humans", on hi ha una gràfica per cada rol que mostra els "humans" vius per aquell rol. També hi ha una gràfica que conta el nombre total d"humans" vius. Amb aquestes gràfiques es pot veure la fluctuació del nombre d'humans, com funciona la reproducció i l'assignació de rols. També hi ha una gràfica per tal de saber quants humans han mort de gana (per energy = 0).
 
-A la part esquerra de la pantalla hi ha dues gràfiques, una per saber el nombre de mammoths vius (que serveix per tal de veure la reproducció) i una altre que mostra el nombre d'entitats executats. En aquesta gràfica "executions" es pot veure en vermell el nombre de humans matats a mà de mammoths i en blau el nombre de mammoths matats per humans. Aquesta gràfica serveix per veure com funciona la caça. 
+A la part esquerra de la pantalla hi ha dues gràfiques, una per saber el nombre de "mammoths" vius (que serveix per a veure la reproducció) i una altra que mostra el nombre d'entitats executades. En aquesta gràfica "executions" es pot veure en vermell el nombre de humans matats a mà de "mammoths" i en blau el nombre de "mammoths" matats per humans. Aquesta gràfica serveix per veure com funciona la caça.
 
-Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go", que els diferents paràmetres configurables influeixen molt en el resultat de la simulació, on en alguns casos els humans s'extingeixen i en altres casos els humans aconsegueixen sobreviure. 
+Es pot observar, variant els diferents paràmetres i fent diversos "setup" i "go", que els diferents paràmetres configurables influeixen molt en el resultat de la simulació, on en alguns casos els humans s'extingeixen i en altres casos els humans aconsegueixen sobreviure.
 
 ## COSES A PROVAR
 
-Seria interessant provar el que s'ha esmentat a l'apartat diferent fent diverses simulacions modificant els valors dels sliders. 
-Per exemple, quan la simulació comença amb pocs humans o amb una bona quantitat d'humans pero velocitat d'aquests molt baixa, els humans acaben morint molt ràpid per gana. Tan mateix, si la simulació comença amb molts humans i bona velocitat, els mamoths acabaran per extingir-se.
+Seria interessant provar el que s'ha esmentat a l'apartat diferent fent diverses simulacions modificant els valors dels sliders.
+Per exemple, quan la simulació comença amb pocs humans o amb una bona quantitat d'humans però velocitat d'aquests molt baixa, els humans acaben morint molt de pressa per gana. Tanmateix, si la simulació comença amb molts humans i bona velocitat, els mamoths acabaran per extingir-se.
 
-També, si es configura una velocitat molt alta dels mammoths o la velocitat dels mammoths es igual o major a la dels humans, aquests son més difícils de caçar i dons també provoca l'extinció per gana del humans.
-
-
-
+També, si es configura una velocitat molt alta dels "mammoths" o la velocitat dels "mammoths" és igual o major a la dels humans, aquests són més difícils de caçar i doncs també provoca l'extinció per gana dels humans.
 
 ## CREDITS
 
