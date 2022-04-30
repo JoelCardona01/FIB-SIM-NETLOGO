@@ -13,7 +13,6 @@ globals [
   mammoth-max-reproduction
   human-max-reproduction
   reproducecooldown
-  human-birth-rate
   min-human-age-to-reproduce
   humans-executed
   mammoths-executed
@@ -34,7 +33,6 @@ to SETUP
   set mammoth-max-reproduction 1
   set reproducecooldown 300
   set human-max-age (25 * 365)
-  set human-birth-rate 20
   set min-human-age-to-reproduce 12 * 365
   set humans-executed 0
   set mammoths-executed 0
@@ -72,7 +70,7 @@ end
 
 to go
   ask mammoths [
-
+    ;si es pot reproduir busca mammoths en el seu patch o, si no n'hi ha, busca on hi ha un i va cap a ell, si no es pot reproduir només es va movent
     (ifelse reproduceticks = 0 and age > (3 * 365) and nreproductions = 0  [
       (ifelse any? other mammoths-here and [age] of one-of other mammoths-here > (3 * 365) and [reproduceticks] of one-of other mammoths-here = 0 [
         reproduce (3 * 365) mammoth-birth-rate
@@ -86,7 +84,7 @@ to go
     ]
     [move mammoth-speed])
 
-
+   ;a cada tick augmenta en un dia la seva edat, si ha passat un any es pot tornar a reproduir i si ha passat el cooldown de reproducció aquest es fica a 0
     set age age + 1
     if ticks mod 365 = 0 [
       set nreproductions 0
@@ -94,6 +92,7 @@ to go
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
+    ; es comprova si ja té l'edat maxima d'esperança de vida o si hi ha sobrepoblació
     die-naturally-mammoth
     die-of-overpopulation
   ]
@@ -105,7 +104,7 @@ to go
     ]
     if any? other humans in-radius 2 and not humanHasHome [
       let h one-of  other humans in-radius 2
-      ;si l'altre huma te casa i jo no, agafo la seva, altrament la creo
+      ;si l'altre huma té casa i jo no, agafo la seva, altrament la creo
       (ifelse
        hasHome [xhome] of h [yhome] of h [takeHumanHome h]
        [createHome]
@@ -113,10 +112,10 @@ to go
       setRol
     ]
 
-    ;si trobo un altre huma a prop i tinc casa
+    ;si trobo un altre humà a prop i tinc casa
     if any? other humans in-radius 2 and humanHasHome [
       let h one-of other humans in-radius 2
-      ;en cas que l'altre huma tambe tingui casa i no sigui la meva i es compleixin les condicions per ajuntar cases, les ajuntem
+      ;en cas que l'altre humà també tingui casa i no sigui la meva i es compleixin les condicions per ajuntar cases, les ajuntem
       let xhomeOfH [xhome] of h
       let yhomeOfH [yhome] of h
       if hasHome xhomeOfH yhomeOfH and patch xhome yhome != patch xhomeOfH yhomeOfH and canJoinHomes h [
@@ -128,25 +127,29 @@ to go
       ifelse patch-here = patch xhome yhome [set energy min (list energyTmp 500) set hasFood false]
       [humanMoveHome]
     ]
+
     [
-    ;Aquesta part només la fan els rositas
+    ;Aquesta part només la fan els normals
     ( ifelse
       rol > 10 and rol <= 40 [
+      ; si es poden reproduir van a casa a buscar alguna persona que passi per allà que pugui reproduir-se. Esperen allà fins que es reprodueixen.
       (ifelse
         humanCanReproduce and hasHome xhome yhome [humanMoveHome]
         [move human-speed])
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
         if otherHumanCanReproduce humanhere [
-          reproduceHumans min-human-age-to-reproduce human-birth-rate
+          reproduceHumans min-human-age-to-reproduce
           move 0
         ]
       ]
     ]
-    ;Aquesta part nomes la fan els exploradors.
+
+    ;Aquesta part nomes la fan els exploradors
       rol <= 10 [
-        ;Si hi ha un mamooth aprop, guardem la posicio i la pintem
+        ;Si hi ha un mamooth aprop, guardem la posicio i la marquem
         (ifelse any? mammoths in-radius 5 and not mammothsFound [
+        ; si trobo un mammoth i estic a casa pinto el patch del costat per tal de no esborrar el vermell de la casa.
         ifelse patch-here = patch xhome yhome
           [set xmammoths pxcor + 1
             set ymammoths pycor + 1
@@ -156,14 +159,14 @@ to go
             set ymammoths pycor
             ask patch-here [set pcolor grey]]
          ]
-         ;Si no estem a casa, hem trobat mamuts, i encara no estic llest per caçar, anem a casa
+         ;Si no estic a casa, he trobat mamuts, i encara no estic llest per caçar, vaig a casa
       	 mammothsFound and humanHasHome and not ready? and patch-here != patch xhome yhome[
           	humanMoveHome
          ]
-         ;Si estic a casa, he trobat mamuts i encara no estic llest, informo als caçadors de la localitzacio dels mamuts
+         ;Si estic a casa, he trobat mamuts i encara no estic llest, informo als caçadors de casa meva de la localitzacio dels mamuts i de que hem d'anar a caçar
          patch-here = patch xhome yhome and mammothsFound and ready? = false [
           reportMammothsLocation
-            ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
+          ;Si hi han suficients caçadors a casa, estem llestos per caçar el mamut
           if enoughHuntersHere [
               set ready? true
             ]
@@ -173,12 +176,13 @@ to go
             ifelse patch-here = patch xmammoths ymammoths [set xmammoths  max-pxcor + 1  set ymammoths  max-pycor + 1 set ready? false]
             [humanMoveMammoth]
         ]
+          ; em moc random buscant mammoths
           [move human-speed])
      ]
 
 
 
-      ;aixo ho fan els caçadors
+      ;Aquesta part la fan els caçadors
         rol > 40 [
         (ifelse
          ;Si se on hi han mamuts pero no estic llest, vaig cap a casa
@@ -209,29 +213,37 @@ to go
               [pcolor] of patch xmammoths ymammoths = grey and ready? = true[
                 humanMoveMammoth
               ]
+              ;lluito contra el mamut si el tinc al costat i m'en oblido de aquesta posicio que m'han dit que hi han mamuts perque si sobrevisc, el mamut haura estat mort
               any? mammoths-here and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false  fight ]
+              ;vaig a per el mamut mes proper si no hi ha cap aqui
               any? mammoths in-radius 7 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
                  face min-one-of mammoths [distance myself]
                  moveDirectly human-speed
               ]
+              ;si no hi veig cap mamut, desisteixo de caçar al mamut
               [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false ]
              )
           ]
+            ;si no han trobat cap mammoth al que caçar em moc random
             xmammoths = max-pxcor + 1 and ymammoths = max-pycor + 1 and ready? = false [ move human-speed]
            )
         ]
     )]
 
 
+    ; a cada tick l'edat augmenta en un i l'energia baixa en un
     set age age + 1
     set energy energy - 1
 
+    ; anem restant al cooldown de reproduir-se
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
-
+    ; si em trobo amb un mamut, lluito per defensar-me
     (ifelse rol > 40 [if any? mammoths in-radius 10 [fight]]
     any? mammoths-here [fight])
+
+    ; comprovem que els humans no han superat la seva esperança de vida ni han mort de gana
     die-naturally-human
     die-of-hunger
   ]
@@ -281,7 +293,7 @@ to forceHumanRoles
 end
 
 to setRol
-  set rol random 100 ; Si es de 0 a 10 explorador. De 0.11 a 40 normal. Caçador 41 a 100
+  set rol random 100 ; Si es de 0 a 10 explorador. De 011 a 40 normal. Caçador 41 a 100
   (ifelse
     rol <= 10 [ set color black ask patch xhome yhome [set nexploradors nexploradors + 1] ]
     rol > 10 and rol <= 40 [ set color pink ask patch xhome yhome [set nnormals nnormals + 1] ]
@@ -430,7 +442,7 @@ to reproduce [ min-age birth-rate ]
   ]
 end
 
-to reproduceHumans [min-age birth-rate]
+to reproduceHumans [min-age]
    if age >= min-age and reproduceticks = 0 [
     ask one-of other humans-here[ set nreproductions nreproductions + 1 set reproduceticks reproducecooldown ]
     set reproduceticks reproducecooldown
@@ -650,7 +662,7 @@ nHumansIni
 nHumansIni
 5
 50
-30.0
+20.0
 1
 1
 NIL
