@@ -328,14 +328,27 @@ end
 to move [dist];
   right random 50
   left random 50
-  while [patch-ahead dist = nobody] [
+  if breed = mammoths [
+    while [patch-ahead dist = nobody] [
      right random 50
      left random 50
+    ]
   ]
 
+  if breed = humans and rol > 10 and rol <= 40 [
+    let patchAhead patch-ahead dist
+    let mustMove false
+    ;let i = 0
+    if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (1 + dist) [set mustMove true]] ]
+    while [patch-ahead dist = nobody or mustMove ] [
+      right random 50
+      left random 50
+      set patchAhead patch-ahead dist
+      set mustMove false
+      if (patchAhead != nobody) [ask patchAhead [if any? mammoths in-radius (1 + dist) [set mustMove true]] ]
 
-
-
+    ]
+  ]
   forward dist
 end
 
@@ -573,7 +586,7 @@ nHumansIni
 nHumansIni
 2
 50
-21.0
+50.0
 1
 1
 NIL
