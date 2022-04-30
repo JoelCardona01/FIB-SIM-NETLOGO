@@ -54,7 +54,7 @@ to SETUP
     set shape "person"
     set size 4
     set color pink - 0.5 - random-float 0.5
-    set age 12 * 365
+    set age random(24 * 365)
     set reproduceticks 0
     set xhome max-pxcor + 1
     set yhome max-pycor + 1
@@ -648,7 +648,7 @@ nHumansIni
 nHumansIni
 5
 50
-9.0
+13.0
 1
 1
 NIL
@@ -798,41 +798,67 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot humans-dead-from-hunger"
 
 @#$#@#$#@
-## WHAT IS IT?
+## QUE ÉS?
 
-(a general understanding of what the model is trying to show or explain)
+El nostre model simula agents de reflex basat en models i agents de reflex simple. Hi ha humans i mammoths. Els humans són els agents de reflex basat en models, aquests es divideixen en tres rols; caçadors, exploradors i "normals" (que són els agents encarregats de la reproducció). Aquests rols s'assignen de manera aleatoria per percentatges però s'en fa un petit control per tal que a la casa hi hagi un cert nombre d'humans amb cada rol per sobreviure. Cada rol té un color assignat i uns objectius diferents. Els mammoths són els agents de reflex simple; només es reprodueixen, es mouen i moren o maten humans.
 
-## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+## COM FUNCIONA?
 
-## HOW TO USE IT
+Humans: 
+Els humans poden morir de tres maneres; per gana, per edat o assessinat per un mammoth.
 
-(how to use the model, including a description of each of the items in the Interface tab)
+Caçadors: Grocs. S'encarreguen d'anar a les zones marcades pels exploradors per tal de matar mammoths i portar el menjar a casa. El percentatge assignat és del 60%.
 
-## THINGS TO NOTICE
+Exploradors: Negres. S'encarreguem de buscar on hi ha mammoths per tal de avisar als caçadors a on anar-los a buscar. Quan els troba, recorda la zona i torna a casa per tal de comunicar la zona als caçadors i esperar-los per guiar-los fins a allà.
 
-(suggested things for the user to notice while running the model)
+Normals: Roses. S'encarreguen de la reproducció de l'especie per tal d'evitar l'extinció d'aquesta. Només es poden reporduir una vegada cada 9 mesos (270 ticks) i a partir d'una certa edat (12 anys = 12*365 ticks).
 
-## THINGS TO TRY
+Cases:
+Els humans s'agrupen en cases. Aquestes es veuen com a un cuadrat de color vermell. Si dos humans sense casa es troben, aleshores aquests crearan una on hi viuran junts. En canvi, si dos humans es troben i un d'ells no te casa es pot unir la persona a la casa de l'humà si aquesta no te casa o es poden juntar les dues cases en una si el nombre de persones total no és major a 20.
+
+Mammoths:
+Els mammoths es reprodueixen entre si. Quan es poden reproduir s'apropen al mammoth més proper i així es formen les zones de mammoths. Quan un mammoth i huma es troben hi ha una probabilitat que el mammoth mati a l'huma en comptes que l'huma mati al mammoth. Un altre manera de morir dels mammoths és per sobrepoblació, quan hi ha masses mammoths, cada un té una probabilitat del 5% de morir.
+
+
+## COM UTILITZAR-HO
+
+SETUP: Neteja el món i crea el nombre d'humans i mammoths especificats en els sliders nHumansIni i nMammothsIni respectivament. Tots els humans es creen amb rol normal, amb una edat aleatoria, sense casa, amb capacitat de reproduir-se si tenen l'edat i amb l'energia al 100%. Tots els mammoths es creen amb una edat random, i amb capacitat de reproduir-se si tenen l'edat mínima. Totes les tortugues apareixen en un lloc aleatori.
+
+GO: Comença la simulació.
+
+nHumansIni: Especifica el nombre inicial d'humans.
+
+nMammothsIni: Especifica el nombre inicial de mammoths.
+
+human-speed: Especifica la velocitat dels humans.
+
+mammoth-speed: Especifica la velocitat dels mammoths.
+
+moveToHome: Envia a tots els humans amb casa a la seva casa.
+
+
+## COSES A OBSERVAR
+
+Hi ha diferents gràfiques per tal d'observar el que passa durant la simulació. A la gràfica
+
+
+## COSES A PROVAR
 
 (suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
-## EXTENDING THE MODEL
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+## CREDITS
 
-## NETLOGO FEATURES
+Realització:
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+Marina Alapont Vidal
+Joel Cardona Saus
+Daniel Pulido Gálvez
 
-## RELATED MODELS
+Professor:
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
-
-## CREDITS AND REFERENCES
-
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+Jordi Montero Garcia (AKA: Monty)
 @#$#@#$#@
 default
 true
