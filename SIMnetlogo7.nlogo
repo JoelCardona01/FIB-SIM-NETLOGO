@@ -138,7 +138,6 @@ to go
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
         if otherHumanCanReproduce humanhere [
-              show "puede shingar"
           reproduceHumans min-human-age-to-reproduce human-birth-rate
           move 0
         ]
@@ -433,7 +432,6 @@ to reproduceHumans [min-age birth-rate]
    if age >= min-age and reproduceticks = 0 [
     ask one-of other humans-here[ set nreproductions nreproductions + 1 set reproduceticks reproducecooldown ]
     set reproduceticks reproducecooldown
-    show "he chingao"
     hatch 1 [
       set energy 500
       set age 0
@@ -503,7 +501,6 @@ end
 to die-of-hunger
   if energy = 0 [
     set humans-dead-from-hunger humans-dead-from-hunger + 1
-    show "me muero de hambre xd"
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
       (ifelse

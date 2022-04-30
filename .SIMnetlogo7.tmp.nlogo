@@ -503,7 +503,7 @@ end
 to die-of-hunger
   if energy = 0 [
     set humans-dead-from-hunger humans-dead-from-hunger + 1
-    show "me muero de hambre xd"
+
     let rolturtle [rol] of self
     if hasHome xhome yhome [ask patch xhome yhome [
       (ifelse
@@ -516,10 +516,10 @@ to die-of-hunger
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-244
-18
-695
-470
+249
+58
+700
+510
 -1
 -1
 7.2623
@@ -543,10 +543,10 @@ ticks
 30.0
 
 BUTTON
-15
-427
-86
-460
+390
+16
+461
+49
 NIL
 SETUP
 NIL
@@ -560,10 +560,10 @@ NIL
 1
 
 BUTTON
-113
-426
-176
-459
+488
+15
+551
+48
 NIL
 go
 T
@@ -651,7 +651,7 @@ nHumansIni
 nHumansIni
 5
 50
-10.0
+9.0
 1
 1
 NIL
@@ -787,7 +787,7 @@ PLOT
 185
 969
 335
-Dead humans of hunger
+Humans dead from hunger
 NIL
 NIL
 0.0
@@ -798,7 +798,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot humans-dead-from-hunger"
 
 @#$#@#$#@
 ## WHAT IS IT?
