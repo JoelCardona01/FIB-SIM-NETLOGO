@@ -29,9 +29,8 @@ to SETUP
   set mammoth-birth-rate 30
   set mammoth-max-age (60 * 365)
   set mammoth-max-reproduction 1
-  set reproducecooldown 100
+  set reproducecooldown 270
   set human-max-age (25 * 365)
-  set human-max-reproduction 1
   set human-birth-rate 20
   set min-human-age-to-reproduce 12 * 365
 
@@ -49,8 +48,7 @@ to SETUP
     set shape "person"
     set size 4
     set color pink - 0.5 - random-float 0.5
-    set age random (30 * 365)
-    set nreproductions 0
+    set age 12 * 365
     set reproduceticks 0
     set xhome max-pxcor + 1
     set yhome max-pycor + 1
@@ -58,7 +56,7 @@ to SETUP
     set ymammoths max-pycor + 1
     set rol 30 ; Inicialment tots son normals
     set ready? false
-    set energy 100; Va de 0 a 100
+    set energy 500; Va de 0 a 500
     set hasFood false
     move-to one-of patches
 
@@ -108,8 +106,9 @@ to go
       ]
     ]
     ifelse hasFood = true [
-      if patch-here = patch xhome yhome [set energy max ((energy + 50) 100) ]
-      humanMoveHome
+      let energyTmp energy + 250
+      ifelse patch-here = patch xhome yhome [set energy min (list energyTmp 500) set hasFood false]
+      [humanMoveHome]
     ]
     [
     ;Aquesta part només la fan els rositas
@@ -121,6 +120,7 @@ to go
       if patch-here = patch xhome yhome and any? other humans-here [
         let humanhere one-of other humans-here
         if otherHumanCanReproduce humanhere [
+              show "puede shingar"
           reproduceHumans min-human-age-to-reproduce human-birth-rate
           move 0
         ]
@@ -181,7 +181,7 @@ to go
               ;lluito contra el mamut si el tinc al costat i m'en oblido de aquesta posicio que m'han dit que hi han mamuts perque si sobrevisc, el mamut haura estat mort
               (ifelse any? mammoths-here [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false fight]
               ;vaig a per el mamut mes proper si no hi ha cap aqui
-              any? mammoths in-radius 5 [
+              any? mammoths in-radius 7 [
                  face min-one-of mammoths [distance myself]
                  movehuman human-speed
               ]
@@ -193,7 +193,7 @@ to go
                 humanMoveMammoth
               ]
               any? mammoths-here and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [set xmammoths max-pxcor + 1 set ymammoths max-pycor + 1 set ready? false  fight ]
-              any? mammoths in-radius 5 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
+              any? mammoths in-radius 7 and ready? = true and [pcolor] of patch xmammoths ymammoths != grey [
                  face min-one-of mammoths [distance myself]
                  movehuman human-speed
               ]
@@ -205,22 +205,20 @@ to go
         ]
     )]
 
-    die-naturally-human
+
     set age age + 1
     set energy energy - 1
-     if ticks mod 365 = 0 [
-      set nreproductions 0
-    ]
 
     if reproduceticks > 0 [
       set reproduceticks reproduceticks - 1
     ]
 
-    if any? mammoths-here [fight]
+    (ifelse rol > 40 [if any? mammoths in-radius 7 [fight]]
+    any? mammoths-here [fight])
+    die-naturally-human
+    die-of-hunger
   ]
-
   forceHumanRoles
-
   tick
 end
 
@@ -244,7 +242,7 @@ to forceHumanRoles
             )
           ]
           ;Si tenim menys de dos caçadors i ja tenim normals i exploradors, fem canvi a caçador
-          if nc < 2 [
+          if nc < 4 [
             if nn > 2 or ne > 2 and rol > 10 and rol <= 40  [set rol 60 set color yellow set nc nc + 1 set nn nn - 1]
           ]
           ;Si tenim menys de dos normals i tenim 2 exploradors o mes o tenim 2 caçadors o mes, fem canvi a normal del que tingui mes de 2
@@ -390,11 +388,11 @@ to-report enoughHuntersHere
 end
 
 to-report humanCanReproduce
-   report (reproduceticks = 0  and humanHasHome and patch-here != patch xhome yhome and nreproductions < human-max-reproduction and age >= min-human-age-to-reproduce)
+   report (reproduceticks = 0  and humanHasHome and patch-here != patch xhome yhome and age >= min-human-age-to-reproduce)
 end
 
 to-report otherHumanCanReproduce [h]
-  report ([age] of h > min-human-age-to-reproduce and [nreproductions] of h < human-max-reproduction and [reproduceticks] of h = 0)
+  report ([age] of h > min-human-age-to-reproduce  and [reproduceticks] of h = 0)
 end
 
 to reproduce [ min-age birth-rate ]
@@ -406,16 +404,15 @@ to reproduce [ min-age birth-rate ]
 end
 
 to reproduceHumans [min-age birth-rate]
-   if age >= min-age and nreproductions < human-max-reproduction and reproduceticks = 0 [
+   if age >= min-age and reproduceticks = 0 [
     ask one-of other humans-here[ set nreproductions nreproductions + 1 set reproduceticks reproducecooldown ]
-    set nreproductions nreproductions + 1
     set reproduceticks reproducecooldown
+    show "he chingao"
     hatch 1 [
-      set energy 100
+      set energy 500
       set age 0
       set xhome [xhome] of myself
       set yhome [yhome] of myself
-      set nreproductions 0
       set reproduceticks 0
       set rol random 100 ; Si es de 0 a 10 explorador. De 11 a 40 normal. Caçador 41 a 100
            ifelse rol <= 10
@@ -439,7 +436,7 @@ end
 
 to fight
   if any? mammoths-here [
-    (ifelse (rol > 40 and random  100 > 40) or (rol <= 10 and  random  100 > 60) or (rol > 10 and rol <= 40 and random 100 > 75) [
+    (ifelse (rol > 40 and random  100 > 30) or (rol <= 10 and  random  100 > 50) or (rol > 10 and rol <= 40 and random 100 > 70) [
       let xh xhome
       let yh yhome
       ask humans with [xhome = xh and yhome = yh] [set hasFood true]
@@ -471,6 +468,20 @@ to die-naturally-human
     die
   ]
 end
+
+to die-of-hunger
+  if energy = 0 [
+    show "me muero de hambre xd"
+    let rolturtle [rol] of self
+    if hasHome xhome yhome [ask patch xhome yhome [
+      (ifelse
+        rolturtle <= 10 [set nexploradors nexploradors - 1]
+        rolturtle > 10 and rolturtle <= 40 [ set nnormals nnormals - 1]
+        [set ncaçadors ncaçadors - 1])
+      ]]
+    if hasHome xhome yhome [ask patch xhome yhome [if (nnormals + ncaçadors + nexploradors) <= 0 [set pcolor green - 0.25 - random-float 0.25  ]]]
+    die]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 232
@@ -496,7 +507,7 @@ GRAPHICS-WINDOW
 1
 1
 1
-days
+ticks
 30.0
 
 BUTTON
@@ -575,7 +586,7 @@ human-speed
 human-speed
 0
 1
-0.4
+0.5
 0.1
 1
 NIL
@@ -608,7 +619,7 @@ nHumansIni
 nHumansIni
 2
 50
-11.0
+15.0
 1
 1
 NIL
@@ -694,7 +705,7 @@ nMamoothsIni
 nMamoothsIni
 0
 50
-25.0
+15.0
 1
 1
 NIL
